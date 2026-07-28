@@ -21,7 +21,8 @@ export interface Harness {
  * even if its own signature looks right.
  */
 export function harness(
-  responses: unknown | unknown[] = {},
+  // `unknown | unknown[]` collapses to `unknown`, so the array arm said nothing.
+  responses: unknown = {},
   options: Record<string, unknown> = {},
 ): Harness {
   const calls: RecordedCall[] = [];

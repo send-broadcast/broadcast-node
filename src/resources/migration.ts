@@ -48,6 +48,7 @@ export interface PageParams extends Params {
   offset?: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- see the interface below
 export class Migration extends BaseResource {
   /**
    * Export summary: format version, channel identity, per-resource counts, and
@@ -106,7 +107,14 @@ export class Migration extends BaseResource {
  * a class field declaration compiles to an own property initialised to
  * undefined, which would shadow the generated prototype method and make every
  * collection call fail with "is not a function".
+ *
+ * ESLint flags class/interface merging as unsafe, and in general it is — the
+ * interface promises members the class body does not define. Here that is the
+ * entire point: the members are attached to the prototype in the loop below,
+ * and `test/resources.test.ts` calls all 18 to prove they exist at runtime.
  */
+/* eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging, @typescript-eslint/no-empty-object-type --
+   the empty body is deliberate: everything comes from the Record it extends */
 export interface Migration extends Record<CollectionName, (params?: PageParams) => Promise<any>> {}
 
 for (const [method, path] of Object.entries(COLLECTIONS)) {

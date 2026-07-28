@@ -118,6 +118,26 @@ describe('Connection: request building', () => {
     assert.equal(query.get('custom_data[plan]'), 'pro');
   });
 
+  // Only one level of nesting is flattened, so an object deeper than that is a
+  // caller mistake. String() would turn it into the literal text
+  // "[object Object]" and the server would filter on that, which is both wrong
+  // and impossible to diagnose from a request log.
+  test('an object nested deeper than one level serialises as JSON, not [object Object]', async () => {
+    const { connection, calls } = connect({ body: {} });
+    await connection.request('GET', '/api/v1/subscribers.json', { tags: [{ name: 'vip' }] });
+
+    const value = new URL(calls[0]!.url).searchParams.get('tags[]');
+    assert.notEqual(value, '[object Object]');
+    assert.equal(value, '{"name":"vip"}');
+  });
+
+  test('a nested object inside a hash param serialises as JSON too', async () => {
+    const { connection, calls } = connect({ body: {} });
+    await connection.request('GET', '/api/v1/subscribers.json', { custom_data: { plan: { tier: 'pro' } } });
+
+    assert.equal(new URL(calls[0]!.url).searchParams.get('custom_data[plan]'), '{"tier":"pro"}');
+  });
+
   test('null params are dropped', async () => {
     const { connection, calls } = connect({ body: {} });
     await connection.request('GET', '/api/v1/subscribers.json', { page: 1, source: null });

@@ -23,7 +23,14 @@ export class WebhookEndpoints extends BaseResource {
     return this.httpDelete<T>(`/api/v1/webhook_endpoints/${id}`);
   }
 
-  test<T = any>(id: Id, eventType: EventType | string = 'test.webhook'): Promise<T> {
+  /**
+   * `EventType | (string & {})` rather than `EventType | string`: a plain
+   * `string` in the union absorbs the literal type, so editors offered no
+   * completions for the 32 known event names. The intersection keeps the
+   * literals suggestible while still accepting any string, since the server
+   * may learn new event types before this package does.
+   */
+  test<T = any>(id: Id, eventType: EventType | (string & {}) = 'test.webhook'): Promise<T> {
     return this.httpPost<T>(`/api/v1/webhook_endpoints/${id}/test`, { event_type: eventType });
   }
 

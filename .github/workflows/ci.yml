@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # A weekly build catches a dependency release that breaks us before a user
+  # does, and re-proves the engines floor against current Node patch releases.
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Lint, typecheck and the unit suite.
+  #
+  # The tests run TypeScript directly via --experimental-strip-types, which
+  # needs Node 22.6+. That is a constraint on the *sources*, not on the shipped
+  # package — the `compat` job below is what proves the engines floor.
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+
+    name: Test — Node ${{ matrix.node }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  # Proves `engines.node` is true rather than aspirational.
+  #
+  # Before this existed the package advertised >=18 while only ever having been
+  # executed on 22. The built output is what a user actually installs, so this
+  # builds it and exercises both the ESM and CJS entry points on every Node in
+  # the supported range.
+  compat:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22', '24']
+
+    name: Built package — Node ${{ matrix.node }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Smoke-test the built package
+        run: node scripts/smoke.mjs
+
+  # Guards the claim the README makes. The coverage report itself lives in the
+  # broadcast repo and needs Ruby, so this checks the one input this repo owns:
+  # the dynamic-operation manifest must stay in step with the generated
+  # collection methods, or the SDK silently drops below 104/104.
+  coverage-manifest:
+    runs-on: ubuntu-latest
+    name: API coverage manifest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Manifest matches COLLECTIONS
+        run: |
+          node --experimental-strip-types -e '
+            import { readFileSync } from "node:fs";
+            import assert from "node:assert/strict";
+            const { COLLECTIONS } = await import("./src/resources/migration.ts");
+
+            const manifest = readFileSync(".api-coverage.yml", "utf8");
+            const declared = [...manifest.matchAll(/- GET \/api\/migration\/v1\/(\w+)/g)]
+              .map((m) => m[1]).sort();
+            const implemented = Object.values(COLLECTIONS).sort();
+
+            assert.deepEqual(declared, implemented,
+              ".api-coverage.yml is out of sync with COLLECTIONS");
+            console.log(implemented.length + " migration collections, manifest in sync");
+          '

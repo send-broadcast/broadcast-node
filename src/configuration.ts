@@ -117,7 +117,13 @@ export class Configuration {
 }
 
 function isBlank(value: unknown): boolean {
-  return value === null || value === undefined || String(value).trim() === '';
+  if (value === null || value === undefined) return true;
+  // Anything that is not a string is a caller error rather than a blank value:
+  // String({}) is "[object Object]", which would read as present and then fail
+  // far away from the mistake.
+  if (typeof value !== 'string') return false;
+
+  return value.trim() === '';
 }
 
 function stripTrailingSlash(value: string): string {

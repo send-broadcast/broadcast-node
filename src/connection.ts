@@ -142,21 +142,21 @@ export class Connection {
 
     if (method !== 'GET') {
       throw new APIError(
-        `Host redirected ${method} ${url} to ${location ?? '(no Location header)'}. ` +
+        `Host redirected ${method} ${url.toString()} to ${location ?? '(no Location header)'}. ` +
           'Set `host` to the final URL — writes are not followed automatically.',
       );
     }
     if (location === null) {
-      throw new APIError(`Redirect from ${url} had no Location header`);
+      throw new APIError(`Redirect from ${url.toString()} had no Location header`);
     }
     if (redirects >= MAX_REDIRECTS) {
-      throw new APIError(`Too many redirects (${MAX_REDIRECTS}) starting at ${url}`);
+      throw new APIError(`Too many redirects (${MAX_REDIRECTS}) starting at ${url.toString()}`);
     }
 
     const target = new URL(location, url);
     if (target.hostname.toLowerCase() !== url.hostname.toLowerCase()) {
       throw new APIError(
-        `Host redirected ${url} to a different host (${target}). Not following it — ` +
+        `Host redirected ${url.toString()} to a different host (${target.toString()}). Not following it — ` +
           'the request carries your API token. Set `host` to the correct instance URL.',
       );
     }
@@ -210,7 +210,7 @@ export class Connection {
     }
     if (this.config.warningsMode === 'log') {
       for (const warning of warnings) {
-        this.config.logger?.warn(`[broadcast] ${warning}`);
+        this.config.logger?.warn(`[broadcast] ${warning.toString()}`);
       }
     }
   }
@@ -254,7 +254,7 @@ export class Connection {
     if (!this.config.debug) return;
     // Never log the Authorization header or the body: bodies carry subscriber
     // email addresses and credential fields.
-    this.config.logger?.debug?.(`[broadcast] -> ${method} ${url} ${init.body ? '(body redacted)' : ''}`.trim());
+    this.config.logger?.debug?.(`[broadcast] -> ${method} ${url.toString()} ${init.body ? '(body redacted)' : ''}`.trim());
   }
 
   private debugResponse(response: Response): void {
@@ -270,7 +270,7 @@ function isNonEmptyObject(value: unknown): boolean {
     value !== null &&
     typeof value === 'object' &&
     !Array.isArray(value) &&
-    Object.keys(value as object).length > 0
+    Object.keys(value).length > 0
   );
 }
 
@@ -282,17 +282,34 @@ export function flattenParams(params: Record<string, unknown>): Array<[string, s
     if (value === null || value === undefined) continue;
 
     if (Array.isArray(value)) {
-      for (const entry of value) result.push([`${key}[]`, String(entry)]);
+      for (const entry of value) result.push([`${key}[]`, stringifyParam(entry)]);
     } else if (typeof value === 'object') {
       for (const [sub, subValue] of Object.entries(value as Record<string, unknown>)) {
-        result.push([`${key}[${sub}]`, String(subValue)]);
+        result.push([`${key}[${sub}]`, stringifyParam(subValue)]);
       }
     } else {
-      result.push([key, String(value)]);
+      result.push([key, stringifyParam(value)]);
     }
   }
 
   return result;
+}
+
+/**
+ * Stringifies a single query-parameter value.
+ *
+ * `String(value)` alone turns a nested object into the literal text
+ * "[object Object]", which the server then stores or filters on. Only one
+ * level of nesting is flattened above, so a nested object here is a caller
+ * mistake — JSON is a far more diagnosable thing to see in a request log than
+ * "[object Object]", and it is at least recoverable server-side.
+ */
+function stringifyParam(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'object') return JSON.stringify(value) ?? '';
+
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- primitives only by this point
+  return String(value);
 }
 
 /**
