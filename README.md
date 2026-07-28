@@ -8,14 +8,6 @@ Works with any Broadcast instance — self-hosted or SaaS. Covers **104/104 API 
 
 Also available: [Ruby](https://github.com/send-broadcast/broadcast-ruby) · [PHP](https://github.com/send-broadcast/broadcast-php) · [Python](https://github.com/send-broadcast/broadcast-python)
 
-> **Not yet on npm.** The package is complete and tested but unpublished, so
-> `npm install @send-broadcast/sdk` will not resolve. Install from the repository
-> until it lands:
->
-> ```bash
-> npm install github:send-broadcast/broadcast-node
-> ```
-
 ## Installation
 
 ```bash

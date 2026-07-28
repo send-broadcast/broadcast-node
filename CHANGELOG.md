@@ -2,7 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.0] - 2026-07-27
+## [0.1.0] - 2026-07-28
+
+Published to npm as `@send-broadcast/sdk`. Verified from the registry: both the
+ESM and CommonJS entry points load, all 18 migration methods survive bundling,
+and the webhook signature is byte-identical to the Ruby, PHP and Python SDKs.
+
+CI runs lint, typecheck and the suite on Node 22 and 24, and builds and
+smoke-tests the published output on Node 18, 20, 22 and 24 — so the
+`engines.node >= 18` floor is tested, not assumed.
+
 
 First release. Feature parity with `broadcast-ruby` v0.3.0 — the reference
 implementation — verified at **104/104 API operations** by the coverage report
