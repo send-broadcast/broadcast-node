@@ -1,4 +1,4 @@
-# @broadcast/sdk
+# @send-broadcast/sdk
 
 Official Node/TypeScript client for [Broadcast](https://sendbroadcast.net), the self-hosted email marketing platform.
 
@@ -9,7 +9,7 @@ Works with any Broadcast instance — self-hosted or SaaS. Covers **104/104 API 
 Also available: [Ruby](https://github.com/send-broadcast/broadcast-ruby) · [PHP](https://github.com/send-broadcast/broadcast-php) · [Python](https://github.com/send-broadcast/broadcast-python)
 
 > **Not yet on npm.** The package is complete and tested but unpublished, so
-> `npm install @broadcast/sdk` will not resolve. Install from the repository
+> `npm install @send-broadcast/sdk` will not resolve. Install from the repository
 > until it lands:
 >
 > ```bash
@@ -19,7 +19,7 @@ Also available: [Ruby](https://github.com/send-broadcast/broadcast-ruby) · [PHP
 ## Installation
 
 ```bash
-npm install @broadcast/sdk
+npm install @send-broadcast/sdk
 ```
 
 Node 18+ (uses native `fetch`). Ships ESM and CJS builds with TypeScript types
@@ -36,7 +36,7 @@ and no runtime dependencies.
 ## Quick Start
 
 ```ts
-import { Broadcast } from '@broadcast/sdk';
+import { Broadcast } from '@send-broadcast/sdk';
 
 const client = new Broadcast({
   apiToken: process.env.BROADCAST_API_TOKEN,
@@ -55,7 +55,7 @@ await client.transactionals.create({
 CommonJS works too:
 
 ```js
-const { Broadcast } = require('@broadcast/sdk');
+const { Broadcast } = require('@send-broadcast/sdk');
 ```
 
 ### `host` is required
@@ -100,7 +100,7 @@ idempotency-replay marker. Those live behind `meta()` rather than on the object
 itself:
 
 ```ts
-import { meta } from '@broadcast/sdk';
+import { meta } from '@send-broadcast/sdk';
 
 const result = await client.subscribers.create({ email: 'ada@example.com' });
 
@@ -387,7 +387,7 @@ each other's scope — use one client per channel, or pass
 ## Webhooks
 
 ```ts
-import { Webhook, EVENT_TYPES } from '@broadcast/sdk';
+import { Webhook, EVENT_TYPES } from '@send-broadcast/sdk';
 
 const valid = Webhook.verify(
   rawBody,                          // the raw bytes, not a re-serialised object
@@ -509,7 +509,7 @@ and 24, which is what proves the `engines` floor.
 
 | Language | Package | Repository |
 |---|---|---|
-| Node / TypeScript | @broadcast/sdk | this repository |
+| Node / TypeScript | @send-broadcast/sdk | this repository |
 | Ruby | [broadcast-ruby](https://rubygems.org/gems/broadcast-ruby) | [broadcast-ruby](https://github.com/send-broadcast/broadcast-ruby) |
 | PHP | [broadcast/broadcast-php](https://packagist.org/packages/broadcast/broadcast-php) | [broadcast-php](https://github.com/send-broadcast/broadcast-php) |
 | Python | broadcast-python | [broadcast-python](https://github.com/send-broadcast/broadcast-python) |

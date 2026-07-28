@@ -1,5 +1,5 @@
 {
-  "name": "@broadcast/sdk",
+  "name": "@send-broadcast/sdk",
   "version": "0.1.0",
   "description": "Node/TypeScript client for the Broadcast email platform. Subscribers, sequences, broadcasts, segments, templates, autopilot, webhooks, and transactional email. Works with any Broadcast instance.",
   "keywords": [
@@ -34,6 +34,9 @@
     "CHANGELOG.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=18"
   },
