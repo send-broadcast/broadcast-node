@@ -749,3 +749,69 @@ describe('Channel scoping', () => {
     assert.equal(result, 'returned');
   });
 });
+
+describe('Suppressions', () => {
+  test('list, add, remove, bulk, check match the ruby gem wire shapes', async () => {
+    const h = harness();
+
+    await h.client.suppressions.list({ page: 2, email: 'example.com' });
+    assert.equal(h.last().path, '/api/v1/suppressions.json');
+    assert.equal(h.last().query.get('page'), '2');
+    assert.equal(h.last().query.get('email'), 'example.com');
+
+    await h.client.suppressions.add('blocked@example.com');
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/suppressions.json']);
+    assert.deepEqual(h.last().body, { email: 'blocked@example.com' });
+
+    await h.client.suppressions.remove('blocked@example.com');
+    assert.deepEqual([h.last().method, h.last().path], ['DELETE', '/api/v1/suppressions.json']);
+    assert.deepEqual(h.last().body, { email: 'blocked@example.com' });
+
+    await h.client.suppressions.bulkAdd(['a@example.com', 'b@example.com']);
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/suppressions/bulk.json']);
+    assert.deepEqual(h.last().body, { emails: ['a@example.com', 'b@example.com'] });
+
+    await h.client.suppressions.bulkRemove(['a@example.com']);
+    assert.deepEqual([h.last().method, h.last().path], ['DELETE', '/api/v1/suppressions/bulk.json']);
+    assert.deepEqual(h.last().body, { emails: ['a@example.com'] });
+
+    await h.client.suppressions.check('blocked@example.com');
+    assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/suppressions/check.json']);
+    assert.equal(h.last().query.get('email'), 'blocked@example.com');
+  });
+
+  test('check returns the parsed body', async () => {
+    const h = harness({ email: 'blocked@example.com', suppressed: true, scope: 'global' });
+    const result = await h.client.suppressions.check('blocked@example.com');
+    assert.equal(result.suppressed, true);
+    assert.equal(result.scope, 'global');
+  });
+});
+
+describe('Global suppressions', () => {
+  test('list, add, remove, bulk hit the global resource', async () => {
+    const h = harness();
+
+    await h.client.globalSuppressions.list();
+    assert.equal(h.last().path, '/api/v1/global_suppressions.json');
+
+    await h.client.globalSuppressions.add('blocked@example.com');
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/global_suppressions.json']);
+    assert.deepEqual(h.last().body, { email: 'blocked@example.com' });
+
+    await h.client.globalSuppressions.remove('blocked@example.com');
+    assert.deepEqual([h.last().method, h.last().path], ['DELETE', '/api/v1/global_suppressions.json']);
+
+    await h.client.globalSuppressions.bulkAdd(['a@example.com']);
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/global_suppressions/bulk.json']);
+
+    await h.client.globalSuppressions.bulkRemove(['a@example.com']);
+    assert.deepEqual([h.last().method, h.last().path], ['DELETE', '/api/v1/global_suppressions/bulk.json']);
+    assert.deepEqual(h.last().body, { emails: ['a@example.com'] });
+  });
+
+  test('there is no check on the global resource', () => {
+    const h = harness();
+    assert.equal((h.client.globalSuppressions as any).check, undefined);
+  });
+});

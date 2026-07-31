@@ -5,11 +5,13 @@ import { Autopilots } from './resources/autopilots.ts';
 import { Broadcasts } from './resources/broadcasts.ts';
 import { Discovery } from './resources/discovery.ts';
 import { EmailServers } from './resources/email-servers.ts';
+import { GlobalSuppressions } from './resources/global-suppressions.ts';
 import { Migration } from './resources/migration.ts';
 import { OptInForms } from './resources/opt-in-forms.ts';
 import { Segments } from './resources/segments.ts';
 import { Sequences } from './resources/sequences.ts';
 import { Subscribers } from './resources/subscribers.ts';
+import { Suppressions } from './resources/suppressions.ts';
 import { Templates } from './resources/templates.ts';
 import { Transactionals, type TransactionalCreateParams } from './resources/transactionals.ts';
 import { WebhookEndpoints } from './resources/webhook-endpoints.ts';
@@ -35,6 +37,10 @@ export class Broadcast {
   readonly emailServers: EmailServers;
   readonly autopilots: Autopilots;
   readonly discovery: Discovery;
+  /** The current channel's suppression list (plus `check`, which reads the global list too). */
+  readonly suppressions: Suppressions;
+  /** The installation-wide suppression list. Requires an admin (system) API token. */
+  readonly globalSuppressions: GlobalSuppressions;
   /** Read-only export endpoints. Requires an admin (system) API token. */
   readonly migration: Migration;
 
@@ -54,6 +60,8 @@ export class Broadcast {
     this.emailServers = new EmailServers(this);
     this.autopilots = new Autopilots(this);
     this.discovery = new Discovery(this);
+    this.suppressions = new Suppressions(this);
+    this.globalSuppressions = new GlobalSuppressions(this);
     this.migration = new Migration(this);
   }
 
