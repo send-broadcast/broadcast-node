@@ -43,6 +43,32 @@ describe('Discovery', () => {
     assert.match(calls[0]!, /\/api\/v1\/skill$/);
   });
 
+  test('openapi is a raw text endpoint returning the YAML document', async () => {
+    const calls: string[] = [];
+    const fetchImpl = async (input: string | URL) => {
+      calls.push(input.toString());
+      // Charset matters: rawBody decodes as text only when the server declares
+      // one, so that binary raw endpoints (file assets) are not corrupted. The
+      // real endpoint sends "application/yaml; charset=utf-8"; a stub without
+      // the charset would return bytes and misrepresent the client as broken.
+      return new Response('openapi: 3.1.0\ninfo:\n  title: Broadcast API\n', {
+        status: 200,
+        headers: { 'content-type': 'application/yaml; charset=utf-8' },
+      });
+    };
+    const { Broadcast } = await import('../src/client.ts');
+    const client = new Broadcast({
+      apiToken: 't',
+      host: 'https://mail.example.com',
+      fetch: fetchImpl as unknown as typeof globalThis.fetch,
+    });
+
+    const result = await client.discovery.openapi();
+    assert.equal(typeof result, 'string');
+    assert.match(result, /openapi: 3\.1\.0/);
+    assert.match(calls[0]!, /\/api\/v1\/openapi$/);
+  });
+
   test('client-level convenience shims delegate to discovery', async () => {
     const h = harness();
     await h.client.whoami();

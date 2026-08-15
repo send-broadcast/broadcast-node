@@ -122,6 +122,10 @@ export class Broadcast {
     return this.discovery.skill();
   }
 
+  openapi(): Promise<string> {
+    return this.discovery.openapi();
+  }
+
   /** @internal */
   request<T = any>(
     method: HttpMethod,

@@ -32,4 +32,18 @@ export class Discovery extends BaseResource {
   skill(): Promise<string> {
     return this.client.request<string>('GET', '/api/v1/skill', null, { raw: true });
   }
+
+  /**
+   * This installation's own OpenAPI document, as YAML. Returns a string, not an
+   * object — the endpoint serves application/yaml.
+   *
+   * The server URL inside the document is rewritten by the installation to the
+   * host that served it, so the result feeds a client generator or an API
+   * explorer without hand-editing. Preferable to a spec copied from elsewhere:
+   * a 2.28 install serves the 2.28 surface, so it cannot drift from the routes
+   * it describes.
+   */
+  openapi(): Promise<string> {
+    return this.client.request<string>('GET', '/api/v1/openapi', null, { raw: true });
+  }
 }
