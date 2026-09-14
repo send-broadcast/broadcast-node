@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- `client.channelDesign.get()` for `GET /api/v1/channel/design`: the token
+  channel's resolved brand kit (colors, typography, layout, brand), read-only.
+  Requires `templates_read`.
+
 ## [0.1.0] - 2026-07-28
 
 Published to npm as `@send-broadcast/sdk`. Verified from the registry: both the

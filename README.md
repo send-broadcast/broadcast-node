@@ -256,6 +256,19 @@ await client.optInForms.duplicate(id, { label: 'Copy' });
 
 Reading a segment recounts its members server-side, so `segments.get` is not free.
 
+### Channel design (brand kit)
+
+```ts
+const kit = await client.channelDesign.get();
+kit.colors.accent;          // '#2563eb'
+kit.typography.font_stack;  // CSS font stack for the chosen font
+kit.brand.logo_url;         // public URL, or null
+```
+
+Read-only. Returns the token channel's brand kit with defaults filled in, so
+every key is present even when no kit is configured. There is no channel
+parameter: it always reads the token's own channel. Requires `templates_read`.
+
 ### Email servers
 
 ```ts
@@ -415,7 +428,7 @@ integration requires.
 | Sequences | `sequences_read` -- list, get, list steps | `sequences_write` -- create, update, delete, manage steps, enroll subscribers |
 | Broadcasts | `broadcasts_read` -- list, get, statistics | `broadcasts_write` -- create, update, delete, send, schedule |
 | Segments | `segments_read` -- list, get | `segments_write` -- create, update, delete |
-| Templates | `templates_read` -- list, get | `templates_write` -- create, update, delete |
+| Templates | `templates_read` -- list, get, channel design | `templates_write` -- create, update, delete |
 | Opt-In Forms | `opt_in_forms_read` -- list, get, analytics | `opt_in_forms_write` -- create, update, delete, create_variant, duplicate |
 | Email Servers | `email_servers_read` -- list, get | `email_servers_write` -- create, update, delete, test_connection, copy_to_channel (admin) |
 | Webhook Endpoints | `webhook_endpoints_read` -- list, get, deliveries | `webhook_endpoints_write` -- create, update, delete, test |

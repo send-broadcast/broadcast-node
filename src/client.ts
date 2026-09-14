@@ -3,6 +3,7 @@ import { Connection, type HttpMethod, type RequestOptions } from './connection.t
 
 import { Autopilots } from './resources/autopilots.ts';
 import { Broadcasts } from './resources/broadcasts.ts';
+import { ChannelDesign } from './resources/channel-design.ts';
 import { Discovery } from './resources/discovery.ts';
 import { EmailServers } from './resources/email-servers.ts';
 import { GlobalSuppressions } from './resources/global-suppressions.ts';
@@ -31,6 +32,8 @@ export class Broadcast {
   readonly broadcasts: Broadcasts;
   readonly segments: Segments;
   readonly templates: Templates;
+  /** The token channel's resolved brand kit, read-only. Requires `templates_read`. */
+  readonly channelDesign: ChannelDesign;
   readonly webhookEndpoints: WebhookEndpoints;
   readonly transactionals: Transactionals;
   readonly optInForms: OptInForms;
@@ -54,6 +57,7 @@ export class Broadcast {
     this.broadcasts = new Broadcasts(this);
     this.segments = new Segments(this);
     this.templates = new Templates(this);
+    this.channelDesign = new ChannelDesign(this);
     this.webhookEndpoints = new WebhookEndpoints(this);
     this.transactionals = new Transactionals(this);
     this.optInForms = new OptInForms(this);
