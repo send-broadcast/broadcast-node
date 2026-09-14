@@ -335,6 +335,24 @@ describe('Templates', () => {
   });
 });
 
+describe('Channel design', () => {
+  test('get reads the token channel brand kit with no parameters', async () => {
+    const kit = {
+      colors: { accent: '#2563eb', text: '#18181b' },
+      typography: { font: 'system', font_stack: 'system-ui, sans-serif' },
+      layout: { width: 600, radius: 8 },
+      brand: { logo_url: null, logo_width: 180, website_url: null, social_links: [], social_icon_style: 'dark' },
+    };
+    const h = harness(kit);
+
+    const result = await h.client.channelDesign.get();
+    assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/channel/design']);
+    assert.equal([...h.last().query.keys()].length, 0);
+    assert.equal(result.colors.accent, '#2563eb');
+    assert.equal(result.layout.width, 600);
+  });
+});
+
 describe('Opt-in forms', () => {
   test('CRUD wraps under opt_in_form', async () => {
     const h = harness();
