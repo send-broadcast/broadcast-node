@@ -292,6 +292,46 @@ await client.emailServers.update(id, { name: 'Renamed', smtp_password: server.sm
 
 Pass the real credential to rotate it, or omit the field.
 
+### Users
+
+Requires an **admin API token** (a channel token gets 403). The token also
+needs `users_read` for GETs and `users_write` for everything else. Sudo users
+are **read-only** through this API — update/deactivate/activate/delete/
+permission writes on them return 403 — and sudo access can never be granted
+through it.
+
+```ts
+await client.users.list({ q: 'ada', status: 'active' });
+await client.users.create({ email: 'ada@example.com', first_name: 'Ada', last_name: 'Lovelace', send_password_reset: true });
+await client.users.update(id, { first_name: 'Grace' });
+await client.users.deactivate(id);
+await client.users.activate(id);   // also clears lockout
+await client.users.delete(id);
+```
+
+Channel permissions. **PUT replaces the whole channel record** — pass exactly
+one of `permissions`, `role`, or `presetId`; the SDK throws a `TypeError` if
+you pass zero or more than one:
+
+```ts
+await client.users.channelPermissions(id);
+await client.users.setChannelPermissions(id, channelId, { role: 'Editor' });
+await client.users.setChannelPermissions(id, channelId, { permissions: { subscribers_read: true } });
+await client.users.removeChannelPermissions(id, channelId);
+
+await client.users.bulkChannelPermissions(id, {
+  broadcastChannelIds: [1, 2, 3],
+  presetId: 12,
+});
+```
+
+System permissions:
+
+```ts
+await client.users.systemPermissions(id);
+await client.users.updateSystemPermissions(id, { user_management: true });
+```
+
 ### Autopilot
 
 AI-generated newsletters. Requires `autopilot_read` / `autopilot_write`.
@@ -433,6 +473,7 @@ integration requires.
 | Email Servers | `email_servers_read` -- list, get | `email_servers_write` -- create, update, delete, test_connection, copy_to_channel (admin) |
 | Webhook Endpoints | `webhook_endpoints_read` -- list, get, deliveries | `webhook_endpoints_write` -- create, update, delete, test |
 | Autopilot | `autopilot_read` -- list, get, runs | `autopilot_write` -- create, update, delete, activate, pause, deactivate, trigger_run |
+| Users (admin token only) | `users_read` -- list, get, channel/system permissions | `users_write` -- create, update, deactivate, activate, delete, set/remove/bulk channel permissions, update system permissions |
 
 ---
 

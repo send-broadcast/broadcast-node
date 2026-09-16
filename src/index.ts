@@ -46,6 +46,18 @@ export type { TemplateParams } from './resources/templates.ts';
 export type { AutopilotParams } from './resources/autopilots.ts';
 export type { ScheduleParams } from './resources/broadcasts.ts';
 export type { AnalyticsParams } from './resources/opt-in-forms.ts';
+export type {
+  User,
+  UserDetail,
+  UserListParams,
+  UserCreateParams,
+  UserUpdateParams,
+  ChannelPermission,
+  ChannelPermissionWrite,
+  BulkChannelPermissionsParams,
+  BulkChannelPermissionsResult,
+  SystemPermissions,
+} from './resources/users.ts';
 
 import { Broadcast } from './client.ts';
 export default Broadcast;

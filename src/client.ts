@@ -15,6 +15,7 @@ import { Subscribers } from './resources/subscribers.ts';
 import { Suppressions } from './resources/suppressions.ts';
 import { Templates } from './resources/templates.ts';
 import { Transactionals, type TransactionalCreateParams } from './resources/transactionals.ts';
+import { Users } from './resources/users.ts';
 import { WebhookEndpoints } from './resources/webhook-endpoints.ts';
 
 export class Broadcast {
@@ -46,6 +47,8 @@ export class Broadcast {
   readonly globalSuppressions: GlobalSuppressions;
   /** Read-only export endpoints. Requires an admin (system) API token. */
   readonly migration: Migration;
+  /** User management, incl. channel/system permissions. Requires an admin API token. */
+  readonly users: Users;
 
   constructor(options: ConfigurationOptions = {}) {
     this.config = new Configuration(options);
@@ -67,6 +70,7 @@ export class Broadcast {
     this.suppressions = new Suppressions(this);
     this.globalSuppressions = new GlobalSuppressions(this);
     this.migration = new Migration(this);
+    this.users = new Users(this);
   }
 
   // --- Channel scoping (admin/system tokens) ---

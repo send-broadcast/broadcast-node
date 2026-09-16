@@ -29,6 +29,10 @@ export class BaseResource {
     return this.client.request<T>('PATCH', path, body, options);
   }
 
+  protected httpPut<T = any>(path: string, body: unknown = {}, options?: RequestOptions): Promise<T> {
+    return this.client.request<T>('PUT', path, body, options);
+  }
+
   protected httpDelete<T = any>(path: string, body: unknown = null): Promise<T> {
     return this.client.request<T>('DELETE', path, body);
   }

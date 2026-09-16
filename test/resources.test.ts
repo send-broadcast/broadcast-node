@@ -859,3 +859,138 @@ describe('Global suppressions', () => {
     assert.equal((h.client.globalSuppressions as any).check, undefined);
   });
 });
+
+describe('Users', () => {
+  test('client.users exists', () => {
+    const h = harness();
+    assert.ok(h.client.users);
+  });
+
+  test('list passes compacted query params', async () => {
+    const h = harness();
+    await h.client.users.list({ limit: 10, offset: 5, q: 'ada', status: 'active' });
+    assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/users']);
+    assert.equal(h.last().query.get('limit'), '10');
+    assert.equal(h.last().query.get('offset'), '5');
+    assert.equal(h.last().query.get('q'), 'ada');
+    assert.equal(h.last().query.get('status'), 'active');
+  });
+
+  test('list with no params sends no query', async () => {
+    const h = harness();
+    await h.client.users.list();
+    assert.equal([...h.last().query.keys()].length, 0);
+  });
+
+  test('get reads a single user', async () => {
+    const h = harness();
+    await h.client.users.get(7);
+    assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/users/7']);
+  });
+
+  test('create wraps under user', async () => {
+    const h = harness();
+    await h.client.users.create({
+      email: 'ada@example.com',
+      first_name: 'Ada',
+      last_name: 'Lovelace',
+      send_password_reset: true,
+    });
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/users']);
+    assert.deepEqual(h.last().body, {
+      user: { email: 'ada@example.com', first_name: 'Ada', last_name: 'Lovelace', send_password_reset: true },
+    });
+  });
+
+  test('update wraps under user', async () => {
+    const h = harness();
+    await h.client.users.update(7, { first_name: 'Grace' });
+    assert.deepEqual([h.last().method, h.last().path], ['PATCH', '/api/v1/users/7']);
+    assert.deepEqual(h.last().body, { user: { first_name: 'Grace' } });
+  });
+
+  test('deactivate, activate, delete', async () => {
+    const h = harness();
+
+    await h.client.users.deactivate(7);
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/users/7/deactivate']);
+
+    await h.client.users.activate(7);
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/users/7/activate']);
+
+    await h.client.users.delete(7);
+    assert.deepEqual([h.last().method, h.last().path], ['DELETE', '/api/v1/users/7']);
+  });
+
+  test('channelPermissions lists a user\'s channel permissions', async () => {
+    const h = harness();
+    await h.client.users.channelPermissions(7);
+    assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/users/7/channel_permissions']);
+  });
+
+  test('setChannelPermissions PUTs with permissions', async () => {
+    const h = harness();
+    await h.client.users.setChannelPermissions(7, 3, { permissions: { subscribers_read: true } });
+    assert.deepEqual([h.last().method, h.last().path], ['PUT', '/api/v1/users/7/channel_permissions/3']);
+    assert.deepEqual(h.last().body, { permissions: { subscribers_read: true } });
+  });
+
+  test('setChannelPermissions PUTs with role', async () => {
+    const h = harness();
+    await h.client.users.setChannelPermissions(7, 3, { role: 'Editor' });
+    assert.deepEqual(h.last().body, { role: 'Editor' });
+  });
+
+  test('setChannelPermissions PUTs with presetId as preset_id', async () => {
+    const h = harness();
+    await h.client.users.setChannelPermissions(7, 3, { presetId: 12 });
+    assert.deepEqual(h.last().body, { preset_id: 12 });
+  });
+
+  test('setChannelPermissions requires exactly one of permissions|role|presetId', async () => {
+    const h = harness();
+
+    await assert.rejects(() => h.client.users.setChannelPermissions(7, 3, {} as any), /exactly one/);
+    await assert.rejects(
+      () => h.client.users.setChannelPermissions(7, 3, { role: 'Editor', presetId: 12 } as any),
+      /exactly one/,
+    );
+  });
+
+  test('removeChannelPermissions DELETEs', async () => {
+    const h = harness();
+    await h.client.users.removeChannelPermissions(7, 3);
+    assert.deepEqual([h.last().method, h.last().path], ['DELETE', '/api/v1/users/7/channel_permissions/3']);
+  });
+
+  test('bulkChannelPermissions POSTs with snake_case wire keys', async () => {
+    const h = harness();
+    await h.client.users.bulkChannelPermissions(7, {
+      broadcastChannelIds: [1, 2],
+      role: 'Viewer',
+    });
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/users/7/channel_permissions/bulk']);
+    assert.deepEqual(h.last().body, { broadcast_channel_ids: [1, 2], role: 'Viewer' });
+  });
+
+  test('bulkChannelPermissions requires exactly one of permissions|role|presetId', async () => {
+    const h = harness();
+    await assert.rejects(
+      () => h.client.users.bulkChannelPermissions(7, { broadcastChannelIds: [1] } as any),
+      /exactly one/,
+    );
+  });
+
+  test('systemPermissions reads', async () => {
+    const h = harness();
+    await h.client.users.systemPermissions(7);
+    assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/users/7/system_permissions']);
+  });
+
+  test('updateSystemPermissions PATCHes with a permissions body', async () => {
+    const h = harness();
+    await h.client.users.updateSystemPermissions(7, { user_management: true });
+    assert.deepEqual([h.last().method, h.last().path], ['PATCH', '/api/v1/users/7/system_permissions']);
+    assert.deepEqual(h.last().body, { permissions: { user_management: true } });
+  });
+});
