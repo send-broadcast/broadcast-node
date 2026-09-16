@@ -52,7 +52,7 @@ export interface UserCreateParams {
   email: string;
   first_name: string;
   last_name: string;
-  /** One of password or sendPasswordReset is required. */
+  /** One of password or send_password_reset: true is required. */
   password?: string;
   send_password_reset?: boolean;
 }
