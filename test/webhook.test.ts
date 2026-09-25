@@ -88,13 +88,13 @@ describe('Webhook.computeSignature', () => {
 });
 
 describe('EVENT_TYPES', () => {
-  test('has 32 values across five categories', () => {
+  test('has 34 values across five categories', () => {
     assert.equal(EMAIL_EVENTS.length, 8);
-    assert.equal(SUBSCRIBER_EVENTS.length, 7);
+    assert.equal(SUBSCRIBER_EVENTS.length, 9);
     assert.equal(BROADCAST_EVENTS.length, 8);
     assert.equal(SEQUENCE_EVENTS.length, 7);
     assert.equal(SYSTEM_EVENTS.length, 2);
-    assert.equal(EVENT_TYPES.length, 32);
+    assert.equal(EVENT_TYPES.length, 34);
   });
 
   test('contains no duplicates', () => {
@@ -107,5 +107,7 @@ describe('EVENT_TYPES', () => {
     assert.ok(EVENT_TYPES.includes('sequence.subscriber_completed'));
     assert.ok(EVENT_TYPES.includes('message.attempt.exhausted'));
     assert.ok(EVENT_TYPES.includes('test.webhook'));
+    assert.ok(EVENT_TYPES.includes('subscribers.purged'));
+    assert.ok(EVENT_TYPES.includes('subscribers.purge_failed'));
   });
 });

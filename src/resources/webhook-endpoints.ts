@@ -26,7 +26,7 @@ export class WebhookEndpoints extends BaseResource {
   /**
    * `EventType | (string & {})` rather than `EventType | string`: a plain
    * `string` in the union absorbs the literal type, so editors offered no
-   * completions for the 32 known event names. The intersection keeps the
+   * completions for the 34 known event names. The intersection keeps the
    * literals suggestible while still accepting any string, since the server
    * may learn new event types before this package does.
    */

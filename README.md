@@ -451,8 +451,10 @@ identically in all cases.
 Pass the **raw** request body. Re-serialising a parsed object changes the bytes
 and verification will fail.
 
-`EVENT_TYPES` lists all 32 event names; an unknown event type is dropped
-silently when creating an endpoint.
+`EVENT_TYPES` lists all 34 event names; an unknown event type is dropped
+silently when creating an endpoint. `SUBSCRIBER_EVENTS` includes
+`subscribers.purged` and `subscribers.purge_failed`: a purge of the whole
+list sends one of these instead of a `subscriber.deleted` per subscriber.
 
 ---
 
