@@ -42,7 +42,7 @@ check('ESM: metaprogrammed migration methods survive bundling', () => {
   for (const name of Object.keys(esm.COLLECTIONS)) {
     assert.equal(typeof client.migration[name], 'function', `missing ${name}`);
   }
-  assert.equal(Object.keys(esm.COLLECTIONS).length, 18);
+  assert.equal(Object.keys(esm.COLLECTIONS).length, 19);
 });
 check('ESM: 34 event types', () => assert.equal(esm.EVENT_TYPES.length, 34));
 check('ESM: webhook signature matches the other SDKs', () => {
