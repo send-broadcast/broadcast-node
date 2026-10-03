@@ -33,6 +33,7 @@ export const COLLECTIONS = {
   webhookEndpoints: 'webhook_endpoints',
   tokens: 'tokens',
   suppressions: 'suppressions',
+  unsubscribedEmails: 'unsubscribed_emails',
   tags: 'tags',
   users: 'users',
   linkRedirects: 'link_redirects',
@@ -102,7 +103,7 @@ export class Migration extends BaseResource {
 }
 
 /**
- * The 18 collection methods are generated onto the prototype below. They are
+ * The 19 collection methods are generated onto the prototype below. They are
  * declared through interface merging rather than as class fields on purpose:
  * a class field declaration compiles to an own property initialised to
  * undefined, which would shadow the generated prototype method and make every
@@ -111,7 +112,7 @@ export class Migration extends BaseResource {
  * ESLint flags class/interface merging as unsafe, and in general it is — the
  * interface promises members the class body does not define. Here that is the
  * entire point: the members are attached to the prototype in the loop below,
- * and `test/resources.test.ts` calls all 18 to prove they exist at runtime.
+ * and `test/resources.test.ts` calls all 19 to prove they exist at runtime.
  */
 /* eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging, @typescript-eslint/no-empty-object-type --
    the empty body is deliberate: everything comes from the Record it extends */

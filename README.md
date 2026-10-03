@@ -403,6 +403,12 @@ for await (const sub of client.migration.eachRecord('subscribers')) {
   // auto-pages; advances by the limit the server actually applied
 }
 
+// Suppressed addresses live in two lists; export both:
+// suppressions = global suppression list, unsubscribedEmails = the channel's own
+for await (const row of client.migration.eachRecord('unsubscribedEmails')) {
+  // { id, email, broadcast_channel_id, created_at, updated_at }
+}
+
 const bytes = await client.migration.downloadFileAsset(id);  // Uint8Array
 ```
 

@@ -649,7 +649,7 @@ describe('Migration', () => {
   const COLLECTIONS = [
     'channels', 'subscribers', 'templates', 'segments', 'sequences', 'emailServers',
     'optInForms', 'broadcasts', 'outboundReceipts', 'webhookEndpoints', 'tokens',
-    'suppressions', 'tags', 'users', 'linkRedirects', 'linkClicks',
+    'suppressions', 'unsubscribedEmails', 'tags', 'users', 'linkRedirects', 'linkClicks',
     'subscriberHistories', 'fileAssets',
   ] as const;
 
@@ -661,10 +661,11 @@ describe('Migration', () => {
     linkRedirects: 'link_redirects',
     linkClicks: 'link_clicks',
     subscriberHistories: 'subscriber_histories',
+    unsubscribedEmails: 'unsubscribed_emails',
     fileAssets: 'file_assets',
   };
 
-  test('all 18 collections hit their migration path', async () => {
+  test('all 19 collections hit their migration path', async () => {
     const h = harness({ data: [], pagination: { has_more: false } });
 
     for (const collection of COLLECTIONS) {
@@ -695,6 +696,24 @@ describe('Migration', () => {
     const bytes = await client.migration.downloadFileAsset(3);
     assert.ok(bytes instanceof Uint8Array);
     assert.deepEqual([...bytes], [0x89, 0x50, 0x4e, 0x47]);
+  });
+
+  // The channel suppression list (UnsubscribedEmail), separate from
+  // suppressions. Without it an export silently dropped the list.
+  test('eachRecord pages through unsubscribedEmails', async () => {
+    const h = harness([
+      { data: [{ email: 'gone@example.com' }], pagination: { has_more: true, limit: 1 } },
+      { data: [{ email: 'left@example.com' }], pagination: { has_more: false, limit: 1 } },
+    ]);
+
+    const emails: string[] = [];
+    for await (const record of h.client.migration.eachRecord('unsubscribedEmails', { limit: 1 })) {
+      emails.push((record as { email: string }).email);
+    }
+
+    assert.deepEqual(emails, ['gone@example.com', 'left@example.com']);
+    assert.equal(h.calls[0]!.path, '/api/migration/v1/unsubscribed_emails');
+    assert.equal(h.calls[1]!.query.get('offset'), '1');
   });
 
   test('eachRecord pages until has_more is false', async () => {
