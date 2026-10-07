@@ -6,6 +6,23 @@ export interface AnalyticsParams {
   endDate?: Date | string;
 }
 
+/**
+ * The words trigger_settings.frequency accepts: how often the same visitor sees
+ * a popup. always and every_visit mean the same. The server refuses any other
+ * word with 422 (ValidationError); the client does not check, so an older
+ * server is never refused a word it would take.
+ */
+export const TRIGGER_FREQUENCIES = Object.freeze([
+  'always',
+  'every_visit',
+  'once_per_session',
+  'once_per_day',
+  'once_per_week',
+  'once',
+] as const);
+
+export type TriggerFrequency = (typeof TRIGGER_FREQUENCIES)[number];
+
 export class OptInForms extends BaseResource {
   /**
    * Up to 250 per page with `pagination` metadata. Variants are excluded — only
@@ -24,7 +41,8 @@ export class OptInForms extends BaseResource {
   /**
    * Nested settings objects (theme_settings, automation_settings,
    * security_settings, trigger_settings, widget_settings) and the block arrays
-   * are passed through verbatim.
+   * are passed through verbatim. trigger_settings.frequency must be one of
+   * TRIGGER_FREQUENCIES; any other word rejects with ValidationError (422).
    */
   create<T = any>(attrs: Params): Promise<T> {
     return this.httpPost<T>('/api/v1/opt_in_forms', { opt_in_form: attrs });

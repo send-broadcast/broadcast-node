@@ -249,6 +249,8 @@ nested routes.
 await client.segments.create({ name: 'VIPs', rules: [...] });
 await client.templates.create({ label: 'Welcome', subject: 'Hi', body: '...' });
 await client.optInForms.create({ label: 'Footer form' });
+// How often the same visitor sees a popup: one of TRIGGER_FREQUENCIES, or ValidationError (422).
+await client.optInForms.update(id, { trigger_settings: { frequency: 'once_per_day' } });
 await client.optInForms.analytics(id, { startDate: new Date('2026-01-01') });
 await client.optInForms.createVariant(id, { name: 'B', weight: 50 });
 await client.optInForms.duplicate(id, { label: 'Copy' });

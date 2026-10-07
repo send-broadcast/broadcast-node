@@ -39,6 +39,7 @@ export { VERSION } from './version.ts';
 export { REDACTED_FIELDS } from './resources/email-servers.ts';
 export { COLLECTIONS, type CollectionName } from './resources/migration.ts';
 export { MAX_IDEMPOTENCY_KEY_LENGTH } from './resources/transactionals.ts';
+export { TRIGGER_FREQUENCIES, type TriggerFrequency } from './resources/opt-in-forms.ts';
 
 export type { SubscriberListParams, SubscriberCreateParams, SubscriberUpdateOptions, DoubleOptInOptions } from './resources/subscribers.ts';
 export type { TopicParams } from './resources/topics.ts';

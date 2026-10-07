@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `TRIGGER_FREQUENCIES` and the `TriggerFrequency` type: the words
+  `trigger_settings.frequency` accepts (`always`, `every_visit`,
+  `once_per_session`, `once_per_day`, `once_per_week`, `once`).
+
+### Changed
+
+- Opt-in forms: the server now refuses an unknown `trigger_settings`
+  frequency word with 422 (`ValidationError`). Before, it saved any word, and
+  an unknown one showed the popup on every visit. The client still sends what
+  it is given.
+
 ## [0.4.0] - 2026-10-06
 
 ### Added

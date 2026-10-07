@@ -2,6 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { harness } from './helpers.ts';
+import { Broadcast, TRIGGER_FREQUENCIES, ValidationError } from '../src/index.ts';
 
 /**
  * Wire-shape parity with broadcast-ruby, operation by operation.
@@ -437,6 +438,43 @@ describe('Opt-in forms', () => {
     await h.client.optInForms.duplicate(6, { label: 'Copy' });
     assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/opt_in_forms/6/duplicate']);
     assert.deepEqual(h.last().body, { label: 'Copy' });
+  });
+});
+
+describe('Opt-in form frequency', () => {
+  test('TRIGGER_FREQUENCIES lists the words the API accepts', () => {
+    assert.deepEqual([...TRIGGER_FREQUENCIES], [
+      'always', 'every_visit', 'once_per_session', 'once_per_day', 'once_per_week', 'once',
+    ]);
+    assert.ok(Object.isFrozen(TRIGGER_FREQUENCIES));
+  });
+
+  // The server decides which words it accepts; the client sends what it is
+  // given, so an older server is never refused a word it would take.
+  test('trigger_settings pass through verbatim', async () => {
+    const h = harness();
+    await h.client.optInForms.update(6, { trigger_settings: { frequency: 'weekly' } });
+    assert.deepEqual(h.last().body, { opt_in_form: { trigger_settings: { frequency: 'weekly' } } });
+  });
+
+  test('an unknown frequency comes back as ValidationError', async () => {
+    const message = 'Trigger settings frequency "weekly" is not known. '
+      + 'Use one of: always, every_visit, once_per_session, once_per_day, once_per_week, once';
+    const fetchImpl = async () => new Response(JSON.stringify({ error: message }), {
+      status: 422,
+      headers: { 'content-type': 'application/json' },
+    });
+    const client = new Broadcast({
+      apiToken: 'test-token',
+      host: 'https://mail.example.com',
+      retryDelay: 0,
+      fetch: fetchImpl as unknown as typeof globalThis.fetch,
+    });
+
+    await assert.rejects(
+      () => client.optInForms.update(6, { trigger_settings: { frequency: 'weekly' } }),
+      (error: Error) => error instanceof ValidationError && error.message.includes('"weekly" is not known'),
+    );
   });
 });
 
