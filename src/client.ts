@@ -10,6 +10,7 @@ import { GlobalSuppressions } from './resources/global-suppressions.ts';
 import { Migration } from './resources/migration.ts';
 import { OptInForms } from './resources/opt-in-forms.ts';
 import { Segments } from './resources/segments.ts';
+import { Topics } from './resources/topics.ts';
 import { Sequences } from './resources/sequences.ts';
 import { Subscribers } from './resources/subscribers.ts';
 import { Suppressions } from './resources/suppressions.ts';
@@ -32,6 +33,7 @@ export class Broadcast {
   readonly sequences: Sequences;
   readonly broadcasts: Broadcasts;
   readonly segments: Segments;
+  readonly topics: Topics;
   readonly templates: Templates;
   /** The token channel's resolved brand kit, read-only. Requires `templates_read`. */
   readonly channelDesign: ChannelDesign;
@@ -59,6 +61,7 @@ export class Broadcast {
     this.sequences = new Sequences(this);
     this.broadcasts = new Broadcasts(this);
     this.segments = new Segments(this);
+    this.topics = new Topics(this);
     this.templates = new Templates(this);
     this.channelDesign = new ChannelDesign(this);
     this.webhookEndpoints = new WebhookEndpoints(this);

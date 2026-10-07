@@ -88,13 +88,14 @@ describe('Webhook.computeSignature', () => {
 });
 
 describe('EVENT_TYPES', () => {
-  test('has 34 values across five categories', () => {
+  test('has 35 values across five categories', () => {
     assert.equal(EMAIL_EVENTS.length, 8);
-    assert.equal(SUBSCRIBER_EVENTS.length, 9);
+    assert.equal(SUBSCRIBER_EVENTS.length, 10);
+    assert.ok((SUBSCRIBER_EVENTS as readonly string[]).includes('subscriber.preferences_updated'));
     assert.equal(BROADCAST_EVENTS.length, 8);
     assert.equal(SEQUENCE_EVENTS.length, 7);
     assert.equal(SYSTEM_EVENTS.length, 2);
-    assert.equal(EVENT_TYPES.length, 34);
+    assert.equal(EVENT_TYPES.length, 35);
   });
 
   test('contains no duplicates', () => {

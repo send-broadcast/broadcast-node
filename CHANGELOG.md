@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `client.topics` for `/api/v1/topics` (subscriber topics): `list`, `get`,
+  `create`, `update`, `delete`, with a `TopicParams` type. Topics use the
+  subscriber permissions. Broadcasts and sequences accept `topic_id`.
+- `subscribers.update(email, attrs, { customDataMode: 'merge' })`: change only
+  the custom_data keys sent; `null` deletes a key. The default stays replace.
+- `subscriber.preferences_updated` webhook event type, in `SUBSCRIBER_EVENTS`
+  and `EVENT_TYPES` (now 35).
+
 ## [0.3.0] - 2026-10-03
 
 ### Added

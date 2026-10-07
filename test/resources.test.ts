@@ -279,6 +279,43 @@ describe('Sequences', () => {
   });
 });
 
+describe('Topics', () => {
+  test('list and get use .json, writes wrap under topic', async () => {
+    const h = harness();
+    await h.client.topics.list();
+    assert.equal(h.last().path, '/api/v1/topics.json');
+
+    await h.client.topics.get(3);
+    assert.equal(h.last().path, '/api/v1/topics/3.json');
+
+    await h.client.topics.create({ name: 'Webinars', custom_data_key: 'sub_webinars' });
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/topics']);
+    assert.deepEqual(h.last().body, { topic: { name: 'Webinars', custom_data_key: 'sub_webinars' } });
+
+    await h.client.topics.update(3, { unset_receives: true });
+    assert.deepEqual([h.last().method, h.last().path], ['PATCH', '/api/v1/topics/3']);
+    assert.deepEqual(h.last().body, { topic: { unset_receives: true } });
+
+    await h.client.topics.delete(3);
+    assert.deepEqual([h.last().method, h.last().path], ['DELETE', '/api/v1/topics/3']);
+  });
+});
+
+describe('Subscribers custom_data_mode', () => {
+  test('merge mode is sent at the top level; omitted by default', async () => {
+    const h = harness();
+    await h.client.subscribers.update('a@b.com', { custom_data: { sub_offers: false } }, { customDataMode: 'merge' });
+    assert.deepEqual(h.last().body, {
+      email: 'a@b.com',
+      custom_data_mode: 'merge',
+      subscriber: { custom_data: { sub_offers: false } },
+    });
+
+    await h.client.subscribers.update('a@b.com', { first_name: 'Grace' });
+    assert.deepEqual(h.last().body, { email: 'a@b.com', subscriber: { first_name: 'Grace' } });
+  });
+});
+
 describe('Segments', () => {
   test('list and get use .json, writes wrap under segment', async () => {
     const h = harness();

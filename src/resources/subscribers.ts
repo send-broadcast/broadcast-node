@@ -16,6 +16,10 @@ export interface SubscriberListParams extends Params {
   custom_data?: Record<string, unknown>;
 }
 
+export interface SubscriberUpdateOptions {
+  customDataMode?: 'replace' | 'merge';
+}
+
 export interface DoubleOptInOptions {
   reply_to?: string;
   confirmation_template_id?: Id;
@@ -71,8 +75,14 @@ export class Subscribers extends BaseResource {
     return this.httpPost<T>('/api/v1/subscribers.json', payload);
   }
 
-  update<T = any>(email: string, attrs: Params): Promise<T> {
-    return this.httpPatch<T>('/api/v1/subscribers.json', { email, subscriber: attrs });
+  /**
+   * customDataMode: 'replace' (the API default) stores custom_data as sent;
+   * 'merge' changes only the keys sent, and a null value deletes that key.
+   */
+  update<T = any>(email: string, attrs: Params, options: SubscriberUpdateOptions = {}): Promise<T> {
+    const payload: Params = { email, subscriber: attrs };
+    if (options.customDataMode) payload['custom_data_mode'] = options.customDataMode;
+    return this.httpPatch<T>('/api/v1/subscribers.json', payload);
   }
 
   addTags<T = any>(email: string, tags: string[]): Promise<T> {

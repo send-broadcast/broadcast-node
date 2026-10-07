@@ -69,13 +69,13 @@ describe('public surface', () => {
 
   test('exports webhook verification and the event catalogue', () => {
     assert.equal(typeof sdk.Webhook.verify, 'function');
-    assert.equal(sdk.EVENT_TYPES.length, 34);
+    assert.equal(sdk.EVENT_TYPES.length, 35);
   });
 
   test('every resource is reachable on a constructed client', () => {
     const client = new sdk.Broadcast({ apiToken: 't', host: 'https://mail.example.com' });
     for (const name of [
-      'subscribers', 'sequences', 'broadcasts', 'segments', 'templates',
+      'subscribers', 'sequences', 'broadcasts', 'segments', 'topics', 'templates',
       'webhookEndpoints', 'transactionals', 'optInForms', 'emailServers',
       'autopilots', 'discovery', 'migration',
     ]) {

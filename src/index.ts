@@ -40,7 +40,8 @@ export { REDACTED_FIELDS } from './resources/email-servers.ts';
 export { COLLECTIONS, type CollectionName } from './resources/migration.ts';
 export { MAX_IDEMPOTENCY_KEY_LENGTH } from './resources/transactionals.ts';
 
-export type { SubscriberListParams, SubscriberCreateParams, DoubleOptInOptions } from './resources/subscribers.ts';
+export type { SubscriberListParams, SubscriberCreateParams, SubscriberUpdateOptions, DoubleOptInOptions } from './resources/subscribers.ts';
+export type { TopicParams } from './resources/topics.ts';
 export type { TransactionalCreateParams } from './resources/transactionals.ts';
 export type { TemplateParams } from './resources/templates.ts';
 export type { AutopilotParams } from './resources/autopilots.ts';
