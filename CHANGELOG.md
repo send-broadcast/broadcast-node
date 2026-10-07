@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-06
+
 ### Added
 
 - `client.topics` for `/api/v1/topics` (subscriber topics): `list`, `get`,
