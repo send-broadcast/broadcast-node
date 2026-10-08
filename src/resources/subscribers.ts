@@ -36,6 +36,13 @@ export interface SubscriberCreateParams extends Params {
   ip_address?: string;
   tags?: string[];
   custom_data?: Record<string, unknown>;
+  /**
+   * Any token, create only — ISO 8601. Stores the subscriber as unsubscribed in
+   * the same request (inactive, on the unsubscribe list), for migrating a list
+   * with its opt-outs intact. No confirmation email; 422 if it is in the future
+   * or sent with is_active: true.
+   */
+  unsubscribed_at?: string;
 
   // Top-level options, NOT wrapped under `subscriber:`.
   double_opt_in?: boolean | DoubleOptInOptions;
@@ -63,7 +70,8 @@ export class Subscribers extends BaseResource {
    * except double_opt_in and confirmation_template_id, which the API expects at
    * the top level.
    *
-   * `unsubscribed_at` is never settable here — use unsubscribe(email).
+   * `unsubscribed_at` creates an already-unsubscribed subscriber; to
+   * unsubscribe an existing one, use unsubscribe(email).
    */
   create<T = any>(params: SubscriberCreateParams): Promise<T> {
     const { double_opt_in, confirmation_template_id, ...attrs } = params;

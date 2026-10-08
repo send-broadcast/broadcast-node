@@ -109,6 +109,13 @@ describe('Subscribers', () => {
     assert.deepEqual(h.last().body, { subscriber: { email: 'a@b.com', first_name: 'Ada', tags: ['vip'] } });
   });
 
+  test('create keeps unsubscribed_at inside subscriber', async () => {
+    const h = harness();
+    await h.client.subscribers.create({ email: 'gone@b.com', unsubscribed_at: '2025-03-14T09:30:00Z' });
+
+    assert.deepEqual(h.last().body, { subscriber: { email: 'gone@b.com', unsubscribed_at: '2025-03-14T09:30:00Z' } });
+  });
+
   test('create lifts double_opt_in and confirmation_template_id to the top level', async () => {
     const h = harness();
     await h.client.subscribers.create({

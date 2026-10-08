@@ -276,6 +276,12 @@ await client.topics.delete(topic.id); // 422 while a broadcast or sequence uses 
 // Send to a topic: (segments) AND topic
 await client.broadcasts.create({ subject: 'Webinar', body: '...', segment_ids: [2], topic_id: topic.id });
 
+// Send to everyone except a segment (also on sequences and autopilots)
+await client.broadcasts.create({ subject: 'Offer', body: '...', excluded_segment_ids: [competitors.id] });
+
+// Migrate someone who already unsubscribed, in one request
+await client.subscribers.create({ email: 'opted-out@example.com', unsubscribed_at: '2025-03-14T09:30:00Z' });
+
 // Change only the keys you send (null deletes a key); the default replaces custom_data
 await client.subscribers.update('jane@example.com', { custom_data: { sub_webinars: false } }, { customDataMode: 'merge' });
 ```

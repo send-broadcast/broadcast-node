@@ -25,6 +25,8 @@ export interface AutopilotParams extends Params {
   newsletter_structure?: string;
   /** Restrict the newsletter's audience. */
   segment_ids?: Id[];
+  /** Segments its drafts never reach (copied into each draft). */
+  excluded_segment_ids?: Id[];
 }
 
 /**
