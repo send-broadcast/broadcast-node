@@ -44,7 +44,7 @@ check('ESM: metaprogrammed migration methods survive bundling', () => {
   }
   assert.equal(Object.keys(esm.COLLECTIONS).length, 19);
 });
-check('ESM: 35 event types', () => assert.equal(esm.EVENT_TYPES.length, 35));
+check('ESM: 37 event types', () => assert.equal(esm.EVENT_TYPES.length, 37));
 check('ESM: webhook signature matches the other SDKs', () => {
   // The same vector the Ruby, PHP and Python suites use.
   const expected = 'y19yI03OyA91nDvr3AtwDvmLYUUjpJ4WSjQFk7PYAqc=';
@@ -72,7 +72,7 @@ check('CJS: migration methods present', () => {
   const client = new cjs.Broadcast({ apiToken: 't', host: 'https://mail.example.com' });
   assert.equal(typeof client.migration.subscribers, 'function');
 });
-check('CJS: 35 event types', () => assert.equal(cjs.EVENT_TYPES.length, 35));
+check('CJS: 37 event types', () => assert.equal(cjs.EVENT_TYPES.length, 37));
 
 // --- Types -----------------------------------------------------------------
 
