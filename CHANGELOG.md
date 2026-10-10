@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-10
+
 ### Added
 
 - `email.send_delayed` and `broadcast.batch_completed` in `EVENT_TYPES` (and in
