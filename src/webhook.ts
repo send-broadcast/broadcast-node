@@ -18,6 +18,7 @@ export const EMAIL_EVENTS = [
   'email.sent',
   'email.delivered',
   'email.delivery_delayed',
+  'email.send_delayed',
   'email.complained',
   'email.bounced',
   'email.opened',
@@ -48,6 +49,7 @@ export const BROADCAST_EVENTS = [
   'broadcast.partial_failure',
   'broadcast.aborted',
   'broadcast.paused',
+  'broadcast.batch_completed',
 ] as const;
 
 export const SEQUENCE_EVENTS = [

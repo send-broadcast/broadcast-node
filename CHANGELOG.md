@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `email.send_delayed` and `broadcast.batch_completed` in `EVENT_TYPES` (and in
+  `EMAIL_EVENTS` / `BROADCAST_EVENTS`), matching the server (Broadcast 2.43.0).
+  `email.send_delayed` fires when a transactional email waits for room under
+  its server's hourly limit.
 - `excluded_segment_ids` on broadcasts, sequences and autopilots (typed on
   `AutopilotParams`): segments a send never reaches. The server refuses a
   segment that is both sent to and excluded with 422.

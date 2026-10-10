@@ -88,14 +88,14 @@ describe('Webhook.computeSignature', () => {
 });
 
 describe('EVENT_TYPES', () => {
-  test('has 35 values across five categories', () => {
-    assert.equal(EMAIL_EVENTS.length, 8);
+  test('has 37 values across five categories', () => {
+    assert.equal(EMAIL_EVENTS.length, 9);
     assert.equal(SUBSCRIBER_EVENTS.length, 10);
     assert.ok((SUBSCRIBER_EVENTS as readonly string[]).includes('subscriber.preferences_updated'));
-    assert.equal(BROADCAST_EVENTS.length, 8);
+    assert.equal(BROADCAST_EVENTS.length, 9);
     assert.equal(SEQUENCE_EVENTS.length, 7);
     assert.equal(SYSTEM_EVENTS.length, 2);
-    assert.equal(EVENT_TYPES.length, 35);
+    assert.equal(EVENT_TYPES.length, 37);
   });
 
   test('contains no duplicates', () => {
@@ -104,6 +104,8 @@ describe('EVENT_TYPES', () => {
 
   test('matches the server-side names exactly', () => {
     assert.ok(EVENT_TYPES.includes('email.delivery_delayed'));
+    assert.ok(EVENT_TYPES.includes('email.send_delayed'));
+    assert.ok(EVENT_TYPES.includes('broadcast.batch_completed'));
     assert.ok(EVENT_TYPES.includes('broadcast.partial_failure'));
     assert.ok(EVENT_TYPES.includes('sequence.subscriber_completed'));
     assert.ok(EVENT_TYPES.includes('message.attempt.exhausted'));

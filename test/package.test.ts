@@ -69,7 +69,7 @@ describe('public surface', () => {
 
   test('exports webhook verification and the event catalogue', () => {
     assert.equal(typeof sdk.Webhook.verify, 'function');
-    assert.equal(sdk.EVENT_TYPES.length, 35);
+    assert.equal(sdk.EVENT_TYPES.length, 37);
   });
 
   test('every resource is reachable on a constructed client', () => {
