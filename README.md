@@ -338,11 +338,16 @@ meta(updated).warnings;
 ```
 
 Broadcast 2.46.0 or later. The settings are grouped like the Settings pages:
-`general`, `sender`, `unsubscribe_page` (with the legal links) and
-`confirmation_page`. Updates are partial: nested text and colours merge, an
+`general`, `sender`, `unsubscribe_page` (with the legal links),
+`confirmation_page` and `opt_in_forms` (`match_brand_kit`: whether new opt-in
+forms start from the brand kit). Updates are partial: nested text and colours merge, an
 empty string or `null` removes a value, and `languages` replaces the list.
 Reading needs `channel_settings_read`, changing needs `channel_settings_write`;
 both are off on every token until you tick them.
+
+The `match_brand_kit` switches (`unsubscribe_page`, `confirmation_page`
+and `opt_in_forms`) decide where the brand kit is used. They are set
+here, not with the brand kit update.
 
 ### Email servers
 
