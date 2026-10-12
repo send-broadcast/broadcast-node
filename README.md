@@ -299,9 +299,50 @@ kit.typography.font_stack;  // CSS font stack for the chosen font
 kit.brand.logo_url;         // public URL, or null
 ```
 
-Read-only. Returns the token channel's brand kit with defaults filled in, so
-every key is present even when no kit is configured. There is no channel
-parameter: it always reads the token's own channel. Requires `templates_read`.
+Returns the token channel's brand kit with defaults filled in, so every key
+is present even when no kit is configured. There is no channel parameter: it
+always reads the token's own channel. Reading requires `templates_read` (or,
+from Broadcast 2.46.0, `channel_settings_read`).
+
+From Broadcast 2.46.0 you can change it. This needs `channel_settings_write`:
+
+```ts
+const kit = await client.channelDesign.update({
+  colors: { accent: '#ff5500' },
+  typography: { font: 'georgia' },
+  brand: { logo_url: 'https://your-broadcast.example/files/eyJ...-logo.png' },
+});
+meta(kit).warnings; // e.g. a key the server did not recognize
+```
+
+Send only what changes, in the shape `get()` returns. An empty string or
+`null` puts a value back to its default, and `social_links` replaces the list.
+`font_stack` and `width` are read-only. The logo must be the `logo_url` of an
+image in the channel's file library; the server never fetches a URL. A value
+the Brand Kit page would refuse is a `ValidationError` (422), and nothing is
+saved.
+
+### Channel settings
+
+```ts
+const settings = await client.channelSettings.get();
+settings.unsubscribe_page.legal_notice_url; // 'https://example.com/impressum'
+
+const updated = await client.channelSettings.update({
+  unsubscribe_page: {
+    privacy_policy_url: 'https://example.com/privacy',
+    legal_notice_url: 'https://example.com/impressum',
+  },
+});
+meta(updated).warnings;
+```
+
+Broadcast 2.46.0 or later. The settings are grouped like the Settings pages:
+`general`, `sender`, `unsubscribe_page` (with the legal links) and
+`confirmation_page`. Updates are partial: nested text and colours merge, an
+empty string or `null` removes a value, and `languages` replaces the list.
+Reading needs `channel_settings_read`, changing needs `channel_settings_write`;
+both are off on every token until you tick them.
 
 ### Email servers
 
@@ -515,6 +556,7 @@ integration requires.
 | Email Servers | `email_servers_read` -- list, get | `email_servers_write` -- create, update, delete, test_connection, copy_to_channel (admin) |
 | Webhook Endpoints | `webhook_endpoints_read` -- list, get, deliveries | `webhook_endpoints_write` -- create, update, delete, test |
 | Autopilot | `autopilot_read` -- list, get, runs | `autopilot_write` -- create, update, delete, activate, pause, deactivate, trigger_run |
+| Channel Settings | `channel_settings_read` -- channel settings, brand kit | `channel_settings_write` -- update channel settings and the brand kit |
 | Users (admin token only) | `users_read` -- list, get, channel/system permissions | `users_write` -- create, update, deactivate, activate, delete, set/remove/bulk channel permissions, update system permissions |
 
 ---

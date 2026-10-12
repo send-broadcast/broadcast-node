@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `client.channelSettings.get()` and `client.channelSettings.update(settings)`
+  for `GET`/`PATCH /api/v1/channel/settings` (Broadcast 2.46.0): general,
+  sender, unsubscribe page (with the privacy policy and legal notice links)
+  and confirmation page settings. Needs the new `channel_settings` permissions.
+- `client.channelDesign.update(kit)` for `PATCH /api/v1/channel/design`
+  (Broadcast 2.46.0): change the brand kit. Needs `channel_settings_write`.
+  The logo is the `logo_url` of an image in the channel's file library.
+
 ## [0.5.0] - 2026-10-10
 
 ### Added

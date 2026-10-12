@@ -2,7 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { harness } from './helpers.ts';
-import { Broadcast, TRIGGER_FREQUENCIES, ValidationError } from '../src/index.ts';
+import { Broadcast, TRIGGER_FREQUENCIES, ValidationError, meta } from '../src/index.ts';
 
 /**
  * Wire-shape parity with broadcast-ruby, operation by operation.
@@ -395,6 +395,46 @@ describe('Channel design', () => {
     assert.equal([...h.last().query.keys()].length, 0);
     assert.equal(result.colors.accent, '#2563eb');
     assert.equal(result.layout.width, 600);
+  });
+
+  test('update sends a partial kit under channel_design and exposes warnings (2.46.0)', async () => {
+    const h = harness({
+      colors: { accent: '#ff5500' },
+      warnings: [{ code: 'unrecognized_parameter', param: 'channel_design.layout.width', message: 'read-only' }],
+    });
+
+    const result = await h.client.channelDesign.update({ colors: { accent: '#ff5500' }, brand: { logo_url: null } });
+    assert.deepEqual([h.last().method, h.last().path], ['PATCH', '/api/v1/channel/design']);
+    assert.deepEqual(h.last().body, { channel_design: { colors: { accent: '#ff5500' }, brand: { logo_url: null } } });
+    assert.equal(result.colors.accent, '#ff5500');
+    assert.equal(meta(result).warnings[0]!.param, 'channel_design.layout.width');
+  });
+});
+
+describe('Channel settings', () => {
+  test('get reads the channel settings with no parameters (2.46.0)', async () => {
+    const h = harness({ general: { name: 'Northwind', language: 'de' } });
+
+    const result = await h.client.channelSettings.get();
+    assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/channel/settings']);
+    assert.equal([...h.last().query.keys()].length, 0);
+    assert.equal(result.general.language, 'de');
+  });
+
+  test('update sends partial groups under channel_settings and exposes warnings', async () => {
+    const h = harness({
+      general: { name: 'Northwind' },
+      warnings: [{ code: 'unrecognized_parameter', param: 'channel_settings.general.domain', message: 'ignored' }],
+    });
+
+    const result = await h.client.channelSettings.update({
+      unsubscribe_page: { legal_notice_url: 'https://northwind.example/impressum' },
+    });
+    assert.deepEqual([h.last().method, h.last().path], ['PATCH', '/api/v1/channel/settings']);
+    assert.deepEqual(h.last().body, {
+      channel_settings: { unsubscribe_page: { legal_notice_url: 'https://northwind.example/impressum' } },
+    });
+    assert.equal(meta(result).warnings[0]!.param, 'channel_settings.general.domain');
   });
 });
 
