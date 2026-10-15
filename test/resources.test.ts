@@ -1,5 +1,8 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { harness } from './helpers.ts';
 import { Broadcast, TRIGGER_FREQUENCIES, ValidationError, meta } from '../src/index.ts';
@@ -1133,5 +1136,149 @@ describe('Users', () => {
     await h.client.users.updateSystemPermissions(7, { user_management: true });
     assert.deepEqual([h.last().method, h.last().path], ['PATCH', '/api/v1/users/7/system_permissions']);
     assert.deepEqual(h.last().body, { permissions: { user_management: true } });
+  });
+});
+
+describe('File assets', () => {
+  const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const asset = {
+    id: 12,
+    filename: 'logo.png',
+    content_type: 'image/png',
+    byte_size: 8,
+    url: 'https://mail.example.com/files/abc-logo.png',
+    created_at: '2026-10-14T09:00:00Z',
+  };
+
+  function form(body: unknown): FormData {
+    assert.ok(body instanceof FormData, 'the upload must be sent as multipart/form-data');
+    return body;
+  }
+
+  test('list passes filter, limit and offset as query params', async () => {
+    const h = harness({ data: [asset], total: 1 });
+    const result = await h.client.fileAssets.list({ filter: 'logo', limit: 10, offset: 20 });
+
+    assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/file_assets']);
+    assert.equal(h.last().query.get('filter'), 'logo');
+    assert.equal(h.last().query.get('limit'), '10');
+    assert.equal(h.last().query.get('offset'), '20');
+    assert.equal(result.total, 1);
+    assert.equal(result.data[0].url, asset.url);
+  });
+
+  test('get', async () => {
+    const h = harness(asset);
+    const result = await h.client.fileAssets.get(12);
+    assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/file_assets/12']);
+    assert.equal(result.filename, 'logo.png');
+  });
+
+  test('upload sends bytes as a multipart "file" part, typed from the extension', async () => {
+    const h = harness(asset);
+    const result = await h.client.fileAssets.upload(png, { filename: 'logo.png' });
+
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/file_assets']);
+    // fetch must set multipart/form-data with its own boundary; a JSON
+    // content type here would make the server ignore the body.
+    assert.equal(h.last().headers['content-type'], undefined);
+
+    const file = form(h.last().body).get('file');
+    assert.ok(file instanceof File);
+    assert.equal(file.name, 'logo.png');
+    assert.equal(file.type, 'image/png');
+    assert.deepEqual(new Uint8Array(await file.arrayBuffer()), png);
+    assert.equal(form(h.last().body).has('channel_restricted'), false);
+    assert.equal(result.id, 12);
+  });
+
+  test('upload accepts a Blob, channelRestricted, contentType and an idempotency key', async () => {
+    const h = harness(asset);
+    await h.client.fileAssets.upload(new Blob([png]), {
+      filename: 'photo.bin',
+      contentType: 'image/jpeg',
+      channelRestricted: true,
+      idempotencyKey: 'upload-1',
+    });
+
+    const body = form(h.last().body);
+    const file = body.get('file') as File;
+    assert.equal(file.name, 'photo.bin');
+    assert.equal(file.type, 'image/jpeg');
+    assert.equal(body.get('channel_restricted'), 'true');
+    assert.equal(h.last().headers['idempotency-key'], 'upload-1');
+  });
+
+  test('upload reads a file path, taking the name and type from it', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'broadcast-file-assets-'));
+    const path = join(dir, 'Banner.JPG');
+    await writeFile(path, png);
+
+    const h = harness(asset);
+    await h.client.fileAssets.upload(path);
+
+    const file = form(h.last().body).get('file') as File;
+    assert.equal(file.name, 'Banner.JPG');
+    assert.equal(file.type, 'image/jpeg');
+    assert.deepEqual(new Uint8Array(await file.arrayBuffer()), png);
+  });
+
+  test('upload of bytes without a filename rejects before any request', async () => {
+    const h = harness(asset);
+    await assert.rejects(() => h.client.fileAssets.upload(png), TypeError);
+    assert.equal(h.calls.length, 0);
+  });
+
+  test('broadcastChannelId is added to the multipart body', async () => {
+    const h = harness(asset, { broadcastChannelId: 42 });
+    await h.client.fileAssets.upload(png, { filename: 'logo.png' });
+
+    const body = form(h.last().body);
+    assert.equal(body.get('broadcast_channel_id'), '42');
+    assert.ok(body.get('file') instanceof File);
+  });
+
+  test('uploadBase64 sends a flat JSON body', async () => {
+    const h = harness(asset);
+    const data = Buffer.from(png).toString('base64');
+    await h.client.fileAssets.uploadBase64({
+      filename: 'logo.png',
+      data,
+      contentType: 'image/png',
+      channelRestricted: false,
+      idempotencyKey: 'b64-1',
+    });
+
+    assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/file_assets']);
+    assert.equal(h.last().headers['content-type'], 'application/json');
+    assert.deepEqual(h.last().body, { filename: 'logo.png', data, content_type: 'image/png', channel_restricted: false });
+    assert.equal(h.last().headers['idempotency-key'], 'b64-1');
+  });
+
+  test('delete', async () => {
+    const h = harness({ message: 'File asset deleted successfully' });
+    const result = await h.client.fileAssets.delete(12);
+    assert.deepEqual([h.last().method, h.last().path], ['DELETE', '/api/v1/file_assets/12']);
+    assert.equal(result.message, 'File asset deleted successfully');
+  });
+
+  test('deleting the Brand Kit logo comes back as ValidationError', async () => {
+    const message = "This file is the channel's Brand Kit logo. Choose another logo (or none) in Settings > Brand Kit "
+      + 'or with PATCH /api/v1/channel/design, then delete the file.';
+    const fetchImpl = async () => new Response(JSON.stringify({ error: message }), {
+      status: 422,
+      headers: { 'content-type': 'application/json' },
+    });
+    const client = new Broadcast({
+      apiToken: 'test-token',
+      host: 'https://mail.example.com',
+      retryDelay: 0,
+      fetch: fetchImpl as unknown as typeof globalThis.fetch,
+    });
+
+    await assert.rejects(
+      () => client.fileAssets.delete(12),
+      (error: Error) => error instanceof ValidationError && error.message.includes('Brand Kit logo'),
+    );
   });
 });

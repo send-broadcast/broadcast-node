@@ -349,6 +349,35 @@ The `match_brand_kit` switches (`unsubscribe_page`, `confirmation_page`
 and `opt_in_forms`) decide where the brand kit is used. They are set
 here, not with the brand kit update.
 
+### File assets
+
+```ts
+const file = await client.fileAssets.upload('./logo.png');       // a path (Node)
+await client.fileAssets.upload(bytes, { filename: 'logo.png' });  // Uint8Array, ArrayBuffer or Blob
+await client.fileAssets.uploadBase64({ filename: 'logo.png', data: base64 });
+
+await client.channelDesign.update({ brand: { logo_url: file.url } });
+
+const { data, total } = await client.fileAssets.list({ filter: 'logo', limit: 20, offset: 0 });
+await client.fileAssets.get(file.id);
+await client.fileAssets.delete(file.id);
+```
+
+Broadcast 2.48.0 or later. The channel's file library: PNG, JPEG or GIF
+images under 10 MB, each with a public `url` that never expires. A file is
+`{ id, filename, content_type, byte_size, url, created_at }`.
+
+`upload()` sends multipart/form-data. The content type follows the file
+extension unless you pass `contentType`. Bytes and a Blob need `filename`.
+`uploadBase64()` sends a JSON body, for callers that already hold base64.
+Both take `channelRestricted: true` (link the file to this channel only; the
+default is every channel) and `idempotencyKey`. Another file type, or a file
+that is too large, is a `ValidationError` (422).
+
+`delete()` refuses a file that is a channel's brand kit logo with a
+`ValidationError` (422). Choose another logo first. Reading needs
+`file_assets_read`; upload and delete need `file_assets_write`.
+
 ### Email servers
 
 ```ts
@@ -561,6 +590,7 @@ integration requires.
 | Email Servers | `email_servers_read` -- list, get | `email_servers_write` -- create, update, delete, test_connection, copy_to_channel (admin) |
 | Webhook Endpoints | `webhook_endpoints_read` -- list, get, deliveries | `webhook_endpoints_write` -- create, update, delete, test |
 | Autopilot | `autopilot_read` -- list, get, runs | `autopilot_write` -- create, update, delete, activate, pause, deactivate, trigger_run |
+| File Assets | `file_assets_read` -- list, get | `file_assets_write` -- upload, uploadBase64, delete |
 | Channel Settings | `channel_settings_read` -- channel settings, brand kit | `channel_settings_write` -- update channel settings and the brand kit |
 | Users (admin token only) | `users_read` -- list, get, channel/system permissions | `users_write` -- create, update, deactivate, activate, delete, set/remove/bulk channel permissions, update system permissions |
 

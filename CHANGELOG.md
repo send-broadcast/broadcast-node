@@ -13,6 +13,11 @@ All notable changes to this project will be documented in this file.
 - `client.channelDesign.update(kit)` for `PATCH /api/v1/channel/design`
   (Broadcast 2.46.0): change the brand kit. Needs `channel_settings_write`.
   The logo is the `logo_url` of an image in the channel's file library.
+- `client.fileAssets` for `/api/v1/file_assets` (Broadcast 2.48.0): `list`
+  (`filter`, `limit`, `offset`), `get`, `upload` (multipart/form-data from a
+  path, bytes or a Blob), `uploadBase64` (JSON body) and `delete`. Deleting a
+  brand kit logo is a `ValidationError` (422). Needs the `file_assets`
+  permissions. Adds the `FileAsset` types and `FILE_ASSET_CONTENT_TYPES`.
 
 ## [0.5.0] - 2026-10-10
 

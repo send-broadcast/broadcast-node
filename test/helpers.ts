@@ -39,7 +39,8 @@ export function harness(
       method: init?.method ?? 'GET',
       path: url.pathname,
       query: url.searchParams,
-      body: init?.body ? JSON.parse(init.body as string) : null,
+      // A multipart upload's body is the FormData itself; everything else is JSON.
+      body: init?.body instanceof FormData ? init.body : init?.body ? JSON.parse(init.body as string) : null,
       headers,
     });
 

@@ -67,12 +67,13 @@ export class Connection {
     return url;
   }
 
-  private buildHeaders(extra: Record<string, string | null | undefined> = {}): Headers {
+  private buildHeaders(extra: Record<string, string | null | undefined> = {}, multipart = false): Headers {
     const headers = new Headers({
       authorization: `Bearer ${this.config.apiToken}`,
-      'content-type': 'application/json',
       'user-agent': `broadcast-node/${VERSION}`,
     });
+    // fetch sets multipart/form-data itself, with the boundary it generates.
+    if (!multipart) headers.set('content-type', 'application/json');
     for (const [key, value] of Object.entries(extra)) {
       if (value === null || value === undefined) continue;
       headers.set(key, String(value));
@@ -87,14 +88,17 @@ export class Connection {
     options: RequestOptions,
     redirects: number,
   ): Promise<T> {
+    const multipart = payload instanceof FormData;
     const init: RequestInit = {
       method,
-      headers: this.buildHeaders(options.headers),
+      headers: this.buildHeaders(options.headers, multipart),
       // fetch follows redirects itself by default, which would send the bearer
       // token to whatever the Location points at. We handle them explicitly.
       redirect: 'manual',
     };
-    if (method !== 'GET' && isNonEmptyObject(payload)) {
+    if (multipart) {
+      init.body = payload;
+    } else if (method !== 'GET' && isNonEmptyObject(payload)) {
       init.body = JSON.stringify(payload);
     }
 

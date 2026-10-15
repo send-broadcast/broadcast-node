@@ -7,6 +7,7 @@ import { ChannelDesign } from './resources/channel-design.ts';
 import { ChannelSettings } from './resources/channel-settings.ts';
 import { Discovery } from './resources/discovery.ts';
 import { EmailServers } from './resources/email-servers.ts';
+import { FileAssets } from './resources/file-assets.ts';
 import { GlobalSuppressions } from './resources/global-suppressions.ts';
 import { Migration } from './resources/migration.ts';
 import { OptInForms } from './resources/opt-in-forms.ts';
@@ -44,6 +45,8 @@ export class Broadcast {
   readonly transactionals: Transactionals;
   readonly optInForms: OptInForms;
   readonly emailServers: EmailServers;
+  /** The channel's file library (2.48.0). Requires the `file_assets` permissions. */
+  readonly fileAssets: FileAssets;
   readonly autopilots: Autopilots;
   readonly discovery: Discovery;
   /** The current channel's suppression list (plus `check`, which reads the global list too). */
@@ -72,6 +75,7 @@ export class Broadcast {
     this.transactionals = new Transactionals(this);
     this.optInForms = new OptInForms(this);
     this.emailServers = new EmailServers(this);
+    this.fileAssets = new FileAssets(this);
     this.autopilots = new Autopilots(this);
     this.discovery = new Discovery(this);
     this.suppressions = new Suppressions(this);
@@ -162,6 +166,12 @@ export class Broadcast {
   private injectChannelScope(bodyOrParams: unknown): unknown {
     const channelId = this.activeChannelId;
     if (channelId === undefined || channelId === null) return bodyOrParams;
+
+    // A multipart upload carries its fields in the FormData itself.
+    if (bodyOrParams instanceof FormData) {
+      if (!bodyOrParams.has('broadcast_channel_id')) bodyOrParams.append('broadcast_channel_id', String(channelId));
+      return bodyOrParams;
+    }
 
     const payload: Record<string, unknown> =
       bodyOrParams !== null && typeof bodyOrParams === 'object' && !Array.isArray(bodyOrParams)

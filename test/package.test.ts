@@ -77,7 +77,7 @@ describe('public surface', () => {
     for (const name of [
       'subscribers', 'sequences', 'broadcasts', 'segments', 'topics', 'templates',
       'webhookEndpoints', 'transactionals', 'optInForms', 'emailServers',
-      'autopilots', 'discovery', 'migration',
+      'autopilots', 'discovery', 'migration', 'fileAssets',
     ]) {
       assert.ok((client as unknown as Record<string, unknown>)[name], `missing resource: ${name}`);
     }

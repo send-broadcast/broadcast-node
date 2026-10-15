@@ -79,7 +79,7 @@ export class Transactionals extends BaseResource {
   }
 }
 
-function idempotencyHeaders(key: string | undefined): Record<string, string> {
+export function idempotencyHeaders(key: string | undefined): Record<string, string> {
   if (key === undefined || key === null) return {};
 
   const trimmed = String(key).trim();
