@@ -11,6 +11,10 @@ export interface AnalyticsParams {
  * a popup. always and every_visit mean the same. The server refuses any other
  * word with 422 (ValidationError); the client does not check, so an older
  * server is never refused a word it would take.
+ *
+ * once_per_days (Broadcast 2.49 and later) shows the popup again after
+ * trigger_settings.frequency_cookie_days days: a whole number, 1 or more;
+ * blank means 30.
  */
 export const TRIGGER_FREQUENCIES = Object.freeze([
   'always',
@@ -19,6 +23,7 @@ export const TRIGGER_FREQUENCIES = Object.freeze([
   'once_per_day',
   'once_per_week',
   'once',
+  'once_per_days',
 ] as const);
 
 export type TriggerFrequency = (typeof TRIGGER_FREQUENCIES)[number];

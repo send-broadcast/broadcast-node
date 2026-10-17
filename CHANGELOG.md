@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `TRIGGER_FREQUENCIES` (and the `TriggerFrequency` type) includes `once_per_days` (Broadcast 2.49): the popup shows
+  again after `trigger_settings.frequency_cookie_days` days, a whole number, 1 or
+  more; blank means 30. The client still sends any word as it is, so nothing
+  changes for a server before 2.49, which refuses the word with 422.
+
 ## [0.6.0] - 2026-10-16
 
 ### Added

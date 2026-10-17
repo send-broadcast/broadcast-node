@@ -251,6 +251,8 @@ await client.templates.create({ label: 'Welcome', subject: 'Hi', body: '...' });
 await client.optInForms.create({ label: 'Footer form' });
 // How often the same visitor sees a popup: one of TRIGGER_FREQUENCIES, or ValidationError (422).
 await client.optInForms.update(id, { trigger_settings: { frequency: 'once_per_day' } });
+// Every N days (Broadcast 2.49 and later): frequency_cookie_days is a whole number, 1 or more; blank means 30.
+await client.optInForms.update(id, { trigger_settings: { frequency: 'once_per_days', frequency_cookie_days: 7 } });
 await client.optInForms.analytics(id, { startDate: new Date('2026-01-01') });
 await client.optInForms.createVariant(id, { name: 'B', weight: 50 });
 await client.optInForms.duplicate(id, { label: 'Copy' });

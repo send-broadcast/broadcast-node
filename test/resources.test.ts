@@ -495,6 +495,7 @@ describe('Opt-in form frequency', () => {
   test('TRIGGER_FREQUENCIES lists the words the API accepts', () => {
     assert.deepEqual([...TRIGGER_FREQUENCIES], [
       'always', 'every_visit', 'once_per_session', 'once_per_day', 'once_per_week', 'once',
+      'once_per_days',
     ]);
     assert.ok(Object.isFrozen(TRIGGER_FREQUENCIES));
   });
