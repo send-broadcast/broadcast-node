@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-17
+
 ### Added
 
 - `TRIGGER_FREQUENCIES` (and the `TriggerFrequency` type) includes `once_per_days` (Broadcast 2.49): the popup shows
