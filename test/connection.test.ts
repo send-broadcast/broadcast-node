@@ -202,7 +202,7 @@ describe('Connection: responses', () => {
 
   test('raw without a charset returns bytes, so binary assets survive', async () => {
     const { connection } = connect({ status: 200, text: '\x89PNG\r\n', headers: { 'content-type': 'image/png' } });
-    const result = await connection.request('GET', '/api/migration/v1/file_assets/1/download', null, { raw: true });
+    const result = await connection.request('GET', '/api/v1/file_assets/1', null, { raw: true });
 
     assert.ok(result instanceof Uint8Array, 'expected bytes for a body with no declared charset');
   });

@@ -499,34 +499,6 @@ await client.prime();    // full capability manifest
 await client.skill();    // plain-text agent skill manifest (a string)
 ```
 
-### Migration / export
-
-Read-only export endpoints. **Admin tokens only**, and every call needs a
-`broadcast_channel_id`.
-
-```ts
-const client = new Broadcast({ ..., broadcastChannelId: 42 });
-
-await client.migration.manifest();          // sizes the export
-await client.migration.subscribers({ limit: 250 });
-
-for await (const sub of client.migration.eachRecord('subscribers')) {
-  // auto-pages; advances by the limit the server actually applied
-}
-
-// Suppressed addresses live in two lists; export both:
-// suppressions = global suppression list, unsubscribedEmails = the channel's own
-for await (const row of client.migration.eachRecord('unsubscribedEmails')) {
-  // { id, email, broadcast_channel_id, created_at, updated_at }
-}
-
-const bytes = await client.migration.downloadFileAsset(id);  // Uint8Array
-```
-
-On a demo instance this entire API returns **403 for every request**, valid
-token or not — deliberately, so a public demo cannot be used as a token oracle.
-It surfaces here as `AuthorizationError`.
-
 ---
 
 ## Channel Scoping
@@ -612,9 +584,6 @@ integration requires.
 The token is valid but lacks the permission for that call. Check the table
 above, then re-issue the key with the resource enabled — permissions are fixed
 at creation.
-
-On a demo instance, the entire migration API returns 403 for every request,
-valid token or not.
 
 ### `ValidationError` (422) on a repeated send
 

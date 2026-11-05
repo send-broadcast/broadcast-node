@@ -37,13 +37,6 @@ check('ESM: client constructs', () => {
   const client = new esm.Broadcast({ apiToken: 't', host: 'https://mail.example.com' });
   assert.equal(typeof client.subscribers.list, 'function');
 });
-check('ESM: metaprogrammed migration methods survive bundling', () => {
-  const client = new esm.Broadcast({ apiToken: 't', host: 'https://mail.example.com' });
-  for (const name of Object.keys(esm.COLLECTIONS)) {
-    assert.equal(typeof client.migration[name], 'function', `missing ${name}`);
-  }
-  assert.equal(Object.keys(esm.COLLECTIONS).length, 19);
-});
 check('ESM: 37 event types', () => assert.equal(esm.EVENT_TYPES.length, 37));
 check('ESM: webhook signature matches the other SDKs', () => {
   // The same vector the Ruby, PHP and Python suites use.
@@ -67,10 +60,6 @@ check('CJS: named export', () => assert.equal(typeof cjs.Broadcast, 'function'))
 check('CJS: client constructs', () => {
   const client = new cjs.Broadcast({ apiToken: 't', host: 'https://mail.example.com' });
   assert.equal(typeof client.autopilots.triggerRun, 'function');
-});
-check('CJS: migration methods present', () => {
-  const client = new cjs.Broadcast({ apiToken: 't', host: 'https://mail.example.com' });
-  assert.equal(typeof client.migration.subscribers, 'function');
 });
 check('CJS: 37 event types', () => assert.equal(cjs.EVENT_TYPES.length, 37));
 

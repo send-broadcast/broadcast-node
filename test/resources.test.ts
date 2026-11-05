@@ -771,127 +771,10 @@ describe('Autopilots', () => {
   });
 });
 
-describe('Migration', () => {
-  const COLLECTIONS = [
-    'channels', 'subscribers', 'templates', 'segments', 'sequences', 'emailServers',
-    'optInForms', 'broadcasts', 'outboundReceipts', 'webhookEndpoints', 'tokens',
-    'suppressions', 'unsubscribedEmails', 'tags', 'users', 'linkRedirects', 'linkClicks',
-    'subscriberHistories', 'fileAssets',
-  ] as const;
-
-  const PATHS: Record<string, string> = {
-    emailServers: 'email_servers',
-    optInForms: 'opt_in_forms',
-    outboundReceipts: 'outbound_receipts',
-    webhookEndpoints: 'webhook_endpoints',
-    linkRedirects: 'link_redirects',
-    linkClicks: 'link_clicks',
-    subscriberHistories: 'subscriber_histories',
-    unsubscribedEmails: 'unsubscribed_emails',
-    fileAssets: 'file_assets',
-  };
-
-  test('all 19 collections hit their migration path', async () => {
-    const h = harness({ data: [], pagination: { has_more: false } });
-
-    for (const collection of COLLECTIONS) {
-      await h.client.migration[collection]({ limit: 10 });
-      const expected = PATHS[collection] ?? collection;
-      assert.deepEqual([h.last().method, h.last().path], ['GET', `/api/migration/v1/${expected}`], collection);
-      assert.equal(h.last().query.get('limit'), '10');
-    }
-  });
-
-  test('manifest', async () => {
-    const h = harness();
-    await h.client.migration.manifest({ days_history: 30 });
-    assert.equal(h.last().path, '/api/migration/v1/manifest');
-    assert.equal(h.last().query.get('days_history'), '30');
-  });
-
-  test('downloadFileAsset returns bytes', async () => {
-    const fetchImpl = async () =>
-      new Response(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), { status: 200, headers: { 'content-type': 'image/png' } });
-    const { Broadcast } = await import('../src/client.ts');
-    const client = new Broadcast({
-      apiToken: 't',
-      host: 'https://mail.example.com',
-      fetch: fetchImpl as unknown as typeof globalThis.fetch,
-    });
-
-    const bytes = await client.migration.downloadFileAsset(3);
-    assert.ok(bytes instanceof Uint8Array);
-    assert.deepEqual([...bytes], [0x89, 0x50, 0x4e, 0x47]);
-  });
-
-  // The channel suppression list (UnsubscribedEmail), separate from
-  // suppressions. Without it an export silently dropped the list.
-  test('eachRecord pages through unsubscribedEmails', async () => {
-    const h = harness([
-      { data: [{ email: 'gone@example.com' }], pagination: { has_more: true, limit: 1 } },
-      { data: [{ email: 'left@example.com' }], pagination: { has_more: false, limit: 1 } },
-    ]);
-
-    const emails: string[] = [];
-    for await (const record of h.client.migration.eachRecord('unsubscribedEmails', { limit: 1 })) {
-      emails.push((record as { email: string }).email);
-    }
-
-    assert.deepEqual(emails, ['gone@example.com', 'left@example.com']);
-    assert.equal(h.calls[0]!.path, '/api/migration/v1/unsubscribed_emails');
-    assert.equal(h.calls[1]!.query.get('offset'), '1');
-  });
-
-  test('eachRecord pages until has_more is false', async () => {
-    const h = harness([
-      { data: [{ id: 1 }, { id: 2 }], pagination: { has_more: true, limit: 2 } },
-      { data: [{ id: 3 }], pagination: { has_more: false, limit: 2 } },
-    ]);
-
-    const seen: number[] = [];
-    for await (const record of h.client.migration.eachRecord('subscribers', { limit: 2 })) {
-      seen.push((record as { id: number }).id);
-    }
-
-    assert.deepEqual(seen, [1, 2, 3]);
-    assert.equal(h.calls.length, 2);
-    assert.equal(h.calls[0]!.query.get('offset'), '0');
-    assert.equal(h.calls[1]!.query.get('offset'), '2');
-  });
-
-  test('eachRecord advances by the server-reported limit, not the requested one', async () => {
-    // The server clamps limit to 250. Advancing by the requested 1000 would skip records.
-    const h = harness([
-      { data: Array.from({ length: 250 }, (_, i) => ({ id: i })), pagination: { has_more: true, limit: 250 } },
-      { data: [{ id: 250 }], pagination: { has_more: false, limit: 250 } },
-    ]);
-
-    const seen: unknown[] = [];
-    for await (const record of h.client.migration.eachRecord('subscribers', { limit: 1000 })) {
-      seen.push(record);
-    }
-
-    assert.equal(seen.length, 251);
-    assert.equal(h.calls[1]!.query.get('offset'), '250');
-  });
-
-  test('eachRecord stops rather than looping forever when the server reports a zero limit', async () => {
-    const h = harness({ data: [{ id: 1 }], pagination: { has_more: true, limit: 0 } });
-
-    const seen: unknown[] = [];
-    for await (const record of h.client.migration.eachRecord('subscribers')) {
-      seen.push(record);
-    }
-
-    assert.equal(seen.length, 1);
-    assert.equal(h.calls.length, 1, 'a zero advance must break the loop, not spin');
-  });
-});
-
 describe('Channel scoping', () => {
   test('broadcastChannelId is injected into query params', async () => {
     const h = harness({}, { broadcastChannelId: 42 });
-    await h.client.migration.subscribers();
+    await h.client.broadcasts.list();
     assert.equal(h.last().query.get('broadcast_channel_id'), '42');
   });
 
@@ -903,7 +786,7 @@ describe('Channel scoping', () => {
 
   test('an explicit broadcast_channel_id wins', async () => {
     const h = harness({}, { broadcastChannelId: 42 });
-    await h.client.migration.subscribers({ broadcast_channel_id: 7 });
+    await h.client.broadcasts.list({ broadcast_channel_id: 7 });
     assert.equal(h.last().query.get('broadcast_channel_id'), '7');
   });
 
@@ -911,11 +794,11 @@ describe('Channel scoping', () => {
     const h = harness();
 
     await h.client.withChannel(99, async () => {
-      await h.client.migration.subscribers();
+      await h.client.broadcasts.list();
     });
     assert.equal(h.last().query.get('broadcast_channel_id'), '99');
 
-    await h.client.migration.subscribers();
+    await h.client.broadcasts.list();
     assert.equal(h.last().query.has('broadcast_channel_id'), false, 'the override must not leak past the block');
   });
 
@@ -928,7 +811,7 @@ describe('Channel scoping', () => {
       }),
     );
 
-    await h.client.migration.subscribers();
+    await h.client.broadcasts.list();
     assert.equal(h.last().query.get('broadcast_channel_id'), '42');
   });
 

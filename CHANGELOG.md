@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Removed
+
+- **Breaking:** `client.migration` and the `COLLECTIONS` / `CollectionName`
+  exports: `manifest`, the 19 export collections, `eachRecord` and
+  `downloadFileAsset`. Broadcast 3 removes the `/api/migration/v1` export API.
+  A server before 3.0 still serves it; stay on 0.7.x to keep using it.
+
 ## [0.7.0] - 2026-10-17
 
 ### Added

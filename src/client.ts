@@ -9,7 +9,6 @@ import { Discovery } from './resources/discovery.ts';
 import { EmailServers } from './resources/email-servers.ts';
 import { FileAssets } from './resources/file-assets.ts';
 import { GlobalSuppressions } from './resources/global-suppressions.ts';
-import { Migration } from './resources/migration.ts';
 import { OptInForms } from './resources/opt-in-forms.ts';
 import { Segments } from './resources/segments.ts';
 import { Topics } from './resources/topics.ts';
@@ -54,7 +53,6 @@ export class Broadcast {
   /** The installation-wide suppression list. Requires an admin (system) API token. */
   readonly globalSuppressions: GlobalSuppressions;
   /** Read-only export endpoints. Requires an admin (system) API token. */
-  readonly migration: Migration;
   /** User management, incl. channel/system permissions. Requires an admin API token. */
   readonly users: Users;
 
@@ -80,7 +78,6 @@ export class Broadcast {
     this.discovery = new Discovery(this);
     this.suppressions = new Suppressions(this);
     this.globalSuppressions = new GlobalSuppressions(this);
-    this.migration = new Migration(this);
     this.users = new Users(this);
   }
 

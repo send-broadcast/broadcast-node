@@ -37,7 +37,6 @@ export type { EventType } from './webhook.ts';
 export { VERSION } from './version.ts';
 
 export { REDACTED_FIELDS } from './resources/email-servers.ts';
-export { COLLECTIONS, type CollectionName } from './resources/migration.ts';
 export { MAX_IDEMPOTENCY_KEY_LENGTH } from './resources/transactionals.ts';
 export { FILE_ASSET_CONTENT_TYPES } from './resources/file-assets.ts';
 export { TRIGGER_FREQUENCIES, type TriggerFrequency } from './resources/opt-in-forms.ts';
