@@ -2,7 +2,7 @@
 
 Official Node/TypeScript client for [Broadcast](https://sendbroadcast.net), the self-hosted email marketing platform.
 
-Works with any Broadcast instance — self-hosted or SaaS. Covers **104/104 API operations**, verified against the API's generated OpenAPI document.
+Works with any self-hosted Broadcast instance. Covers **122/122 API operations** of Broadcast 3.0, verified against the API's generated OpenAPI document.
 
 📖 **[Node SDK documentation](https://sendbroadcast.net/docs/node-sdk)** · [API reference](https://sendbroadcast.net/docs/api-authentication) · [All docs](https://sendbroadcast.net/docs)
 
