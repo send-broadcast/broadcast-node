@@ -2,7 +2,7 @@
 
 Official Node/TypeScript client for [Broadcast](https://sendbroadcast.net), the self-hosted email marketing platform.
 
-Works with any self-hosted Broadcast instance. Covers **122/122 API operations** of Broadcast 3.0, verified against the API's generated OpenAPI document.
+Works with any self-hosted Broadcast instance. Covers **123/123 API operations** of Broadcast 3.1, verified against the API's generated OpenAPI document.
 
 📖 **[Node SDK documentation](https://sendbroadcast.net/docs/node-sdk)** · [API reference](https://sendbroadcast.net/docs/api-authentication) · [All docs](https://sendbroadcast.net/docs)
 
@@ -515,6 +515,15 @@ The override lives on the client instance and is restored afterwards, including
 when the block throws. Concurrent calls on the **same** client instance will see
 each other's scope — use one client per channel, or pass
 `broadcast_channel_id` explicitly, when running channels in parallel.
+
+To find the channel ids, list the channels the token can reach (Broadcast 3.1 or later):
+
+```ts
+const { channels } = await client.channels();
+for (const channel of channels) {
+  await client.withChannel(channel.id, () => client.subscribers.list());
+}
+```
 
 ---
 

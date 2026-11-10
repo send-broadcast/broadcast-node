@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `client.channels()` (`client.discovery.channels()`): the channels the token can reach, `GET /api/v1/channels`
+  (Broadcast 3.1). Every channel for an admin token, its own channel for a channel token, with `token_type`.
+
 ## [0.8.0] - 2026-11-07
 
 ### Removed

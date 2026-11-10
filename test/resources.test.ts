@@ -82,6 +82,14 @@ describe('Discovery', () => {
     await h.client.prime();
     assert.equal(h.last().path, '/api/v1/prime');
   });
+
+  test('channels lists the channels the token can reach (Broadcast 3.1)', async () => {
+    const h = harness();
+    await h.client.discovery.channels();
+    assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/channels']);
+    await h.client.channels();
+    assert.equal(h.last().path, '/api/v1/channels');
+  });
 });
 
 describe('Subscribers', () => {

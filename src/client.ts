@@ -142,6 +142,10 @@ export class Broadcast {
     return this.discovery.openapi();
   }
 
+  channels<T = any>(): Promise<T> {
+    return this.discovery.channels<T>();
+  }
+
   /** @internal */
   request<T = any>(
     method: HttpMethod,

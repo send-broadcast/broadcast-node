@@ -19,6 +19,17 @@ export class Discovery extends BaseResource {
     return this.httpGet<T>('/api/v1/status');
   }
 
+  /**
+   * The channels this token can reach (Broadcast 3.1 or later): every channel
+   * for an admin token, its own channel for a channel token. Returns
+   * `token_type` and `channels` (each `id`, `name`, `slug`, `active`). An admin
+   * token then names one with `broadcastChannelId` or `withChannel`. A plugin
+   * developer token is refused.
+   */
+  channels<T = any>(): Promise<T> {
+    return this.httpGet<T>('/api/v1/channels');
+  }
+
   /** Full capability manifest: version, permissions, endpoint list, rate limit. */
   prime<T = any>(): Promise<T> {
     return this.httpGet<T>('/api/v1/prime');
