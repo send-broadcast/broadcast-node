@@ -23,12 +23,20 @@ export class Sequences extends BaseResource {
 
   // --- Subscriber enrollment ---
 
+  //
+  // Both nest the attributes under `subscriber`, because the API reads them
+  // with `params.require(:subscriber)`. Sent flat, the server answers 400.
+
+  /**
+   * Enrolls a subscriber. Pass `{ email, first_name?, last_name? }`; the client
+   * wraps it in `subscriber`. A body that already has `subscriber` is sent as is.
+   */
   addSubscriber<T = any>(sequenceId: Id, attrs: Params): Promise<T> {
-    return this.httpPost<T>(`/api/v1/sequences/${sequenceId}/add_subscriber`, attrs);
+    return this.httpPost<T>(`/api/v1/sequences/${sequenceId}/add_subscriber`, wrapSubscriber(attrs));
   }
 
   removeSubscriber<T = any>(sequenceId: Id, email: string): Promise<T> {
-    return this.httpDelete<T>(`/api/v1/sequences/${sequenceId}/remove_subscriber`, { email });
+    return this.httpDelete<T>(`/api/v1/sequences/${sequenceId}/remove_subscriber`, { subscriber: { email } });
   }
 
   listSubscribers<T = any>(sequenceId: Id, params: { page?: number } = {}): Promise<T> {
@@ -64,4 +72,11 @@ export class Sequences extends BaseResource {
   deleteStep<T = any>(sequenceId: Id, stepId: Id): Promise<T> {
     return this.httpDelete<T>(`/api/v1/sequences/${sequenceId}/steps/${stepId}`);
   }
+}
+
+/** Nests flat subscriber attributes under `subscriber`, leaving an already-wrapped body alone. */
+function wrapSubscriber(attrs: Params): Params {
+  const nested = attrs.subscriber;
+  if (nested !== null && typeof nested === 'object' && !Array.isArray(nested)) return attrs;
+  return { subscriber: attrs };
 }

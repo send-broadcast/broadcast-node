@@ -264,11 +264,19 @@ describe('Sequences', () => {
     const h = harness();
     await h.client.sequences.addSubscriber(3, { email: 'a@b.com' });
     assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/sequences/3/add_subscriber']);
-    assert.deepEqual(h.last().body, { email: 'a@b.com' });
+    assert.deepEqual(h.last().body, { subscriber: { email: 'a@b.com' } });
+
+    await h.client.sequences.addSubscriber(3, { email: 'a@b.com', first_name: 'Ada', last_name: 'Lovelace' });
+    assert.deepEqual(h.last().body, { subscriber: { email: 'a@b.com', first_name: 'Ada', last_name: 'Lovelace' } });
+
+    // An already-wrapped body is not wrapped twice.
+    await h.client.sequences.addSubscriber(3, { subscriber: { email: 'a@b.com', first_name: 'Ada' } });
+    assert.deepEqual(h.last().body, { subscriber: { email: 'a@b.com', first_name: 'Ada' } });
 
     await h.client.sequences.removeSubscriber(3, 'a@b.com');
     assert.deepEqual([h.last().method, h.last().path], ['DELETE', '/api/v1/sequences/3/remove_subscriber']);
-    assert.deepEqual(h.last().body, { email: 'a@b.com' });
+    assert.deepEqual(h.last().body, { subscriber: { email: 'a@b.com' } });
+    assert.equal(h.last().query.toString(), '');
 
     await h.client.sequences.listSubscribers(3, { page: 2 });
     assert.equal(h.last().path, '/api/v1/sequences/3/list_subscribers');
