@@ -189,7 +189,7 @@ describe('Subscribers', () => {
 });
 
 describe('Broadcasts', () => {
-  test('CRUD sends attributes unwrapped', async () => {
+  test('CRUD wraps attributes under broadcast', async () => {
     const h = harness();
     await h.client.broadcasts.list({ page: 1 });
     assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/broadcasts']);
@@ -199,11 +199,19 @@ describe('Broadcasts', () => {
 
     await h.client.broadcasts.create({ subject: 'Hello' });
     assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/broadcasts']);
-    assert.deepEqual(h.last().body, { subject: 'Hello' });
+    assert.deepEqual(h.last().body, { broadcast: { subject: 'Hello' } });
 
     await h.client.broadcasts.update(5, { subject: 'Edited' });
     assert.deepEqual([h.last().method, h.last().path], ['PATCH', '/api/v1/broadcasts/5']);
-    assert.deepEqual(h.last().body, { subject: 'Edited' });
+    assert.deepEqual(h.last().body, { broadcast: { subject: 'Edited' } });
+
+    // taggify_list and email_headers must land inside the wrapper, where the server reads them.
+    await h.client.broadcasts.create({ subject: 'Hi', taggify_list: 'a,b', email_headers: { 'X-A': '1' } });
+    assert.deepEqual(h.last().body, { broadcast: { subject: 'Hi', taggify_list: 'a,b', email_headers: { 'X-A': '1' } } });
+
+    // An already-wrapped body is sent unchanged.
+    await h.client.broadcasts.update(5, { broadcast: { subject: 'Wrapped' } });
+    assert.deepEqual(h.last().body, { broadcast: { subject: 'Wrapped' } });
 
     await h.client.broadcasts.delete(5);
     assert.deepEqual([h.last().method, h.last().path], ['DELETE', '/api/v1/broadcasts/5']);
@@ -237,7 +245,7 @@ describe('Broadcasts', () => {
 });
 
 describe('Sequences', () => {
-  test('CRUD', async () => {
+  test('CRUD wraps attributes under sequence', async () => {
     const h = harness();
     await h.client.sequences.list();
     assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/sequences']);
@@ -249,12 +257,17 @@ describe('Sequences', () => {
     await h.client.sequences.get(3, { includeSteps: true });
     assert.equal(h.last().query.get('include_steps'), 'true');
 
-    await h.client.sequences.create({ name: 'Onboarding' });
+    await h.client.sequences.create({ label: 'Onboarding' });
     assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/sequences']);
-    assert.deepEqual(h.last().body, { name: 'Onboarding' });
+    assert.deepEqual(h.last().body, { sequence: { label: 'Onboarding' } });
 
-    await h.client.sequences.update(3, { name: 'Renamed' });
+    await h.client.sequences.update(3, { label: 'Renamed' });
     assert.deepEqual([h.last().method, h.last().path], ['PATCH', '/api/v1/sequences/3']);
+    assert.deepEqual(h.last().body, { sequence: { label: 'Renamed' } });
+
+    // An already-wrapped body is sent unchanged.
+    await h.client.sequences.update(3, { sequence: { label: 'Wrapped' } });
+    assert.deepEqual(h.last().body, { sequence: { label: 'Wrapped' } });
 
     await h.client.sequences.delete(3);
     assert.equal(h.last().method, 'DELETE');
@@ -283,7 +296,7 @@ describe('Sequences', () => {
     assert.equal(h.last().query.get('page'), '2');
   });
 
-  test('steps', async () => {
+  test('steps wrap attributes under sequence_step', async () => {
     const h = harness();
     await h.client.sequences.listSteps(3);
     assert.deepEqual([h.last().method, h.last().path], ['GET', '/api/v1/sequences/3/steps']);
@@ -291,11 +304,17 @@ describe('Sequences', () => {
     await h.client.sequences.getStep(3, 9);
     assert.equal(h.last().path, '/api/v1/sequences/3/steps/9');
 
-    await h.client.sequences.createStep(3, { subject: 'Day 1' });
+    await h.client.sequences.createStep(3, { subject: 'Day 1', taggify_list: 'x' });
     assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/sequences/3/steps']);
+    assert.deepEqual(h.last().body, { sequence_step: { subject: 'Day 1', taggify_list: 'x' } });
 
     await h.client.sequences.updateStep(3, 9, { subject: 'Day 2' });
     assert.deepEqual([h.last().method, h.last().path], ['PATCH', '/api/v1/sequences/3/steps/9']);
+    assert.deepEqual(h.last().body, { sequence_step: { subject: 'Day 2' } });
+
+    // An already-wrapped body is sent unchanged.
+    await h.client.sequences.updateStep(3, 9, { sequence_step: { subject: 'Wrapped' } });
+    assert.deepEqual(h.last().body, { sequence_step: { subject: 'Wrapped' } });
 
     await h.client.sequences.moveStep(3, 9, 4);
     assert.deepEqual([h.last().method, h.last().path], ['POST', '/api/v1/sequences/3/steps/9/move']);
@@ -797,7 +816,7 @@ describe('Channel scoping', () => {
   test('broadcastChannelId is injected into bodies', async () => {
     const h = harness({}, { broadcastChannelId: 42 });
     await h.client.broadcasts.create({ subject: 'Hi' });
-    assert.deepEqual(h.last().body, { subject: 'Hi', broadcast_channel_id: 42 });
+    assert.deepEqual(h.last().body, { broadcast: { subject: 'Hi' }, broadcast_channel_id: 42 });
   });
 
   test('an explicit broadcast_channel_id wins', async () => {

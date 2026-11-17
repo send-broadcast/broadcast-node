@@ -9,6 +9,11 @@ All notable changes to this project will be documented in this file.
 - `sequences.addSubscriber` and `sequences.removeSubscriber` sent an unwrapped body (`{ email }`), and the server
   answered 400. The client now sends `{ subscriber: { email, first_name?, last_name? } }`. The call signatures do not
   change; a body that already has `subscriber` is sent as is.
+- `broadcasts.create`/`update`, `sequences.create`/`update` and `sequences.createStep`/`updateStep` sent flat bodies,
+  but the server reads `broadcast`, `sequence` and `sequence_step`. It dropped `taggify_list` (broadcasts, steps) and
+  `email_headers` (broadcasts) without an error. The client now nests the attributes under `broadcast`, `sequence` and
+  `sequence_step`. The call signatures do not change; a body that already has the wrapper key is sent as is.
+- README: `sequences.create` example used `name`; the server field is `label` (`name` returns 400).
 
 ## [0.9.0] - 2026-11-11
 

@@ -228,7 +228,7 @@ await client.broadcasts.statisticsLinks(id);
 ```ts
 await client.sequences.list();
 await client.sequences.get(id, { includeSteps: true });
-await client.sequences.create({ name: 'Onboarding' });
+await client.sequences.create({ label: 'Onboarding' });
 await client.sequences.addSubscriber(id, { email: 'ada@example.com' });
 await client.sequences.removeSubscriber(id, 'ada@example.com');
 await client.sequences.listSubscribers(id, { page: 1 });

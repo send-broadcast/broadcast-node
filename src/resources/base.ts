@@ -4,6 +4,13 @@ import type { RequestOptions } from '../connection.ts';
 export type Params = Record<string, unknown>;
 export type Id = string | number;
 
+/** Nests flat attributes under `key`, leaving a body that already has a plain-object `key` alone. */
+export function wrapIn(key: string, attrs: Params): Params {
+  const nested = attrs[key];
+  if (nested !== null && typeof nested === 'object' && !Array.isArray(nested)) return attrs;
+  return { [key]: attrs };
+}
+
 /**
  * The HTTP helpers are named httpGet/httpDelete rather than get/delete so that
  * resources can expose `get(id)` and `delete(id)` as their public API without

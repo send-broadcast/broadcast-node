@@ -1,4 +1,4 @@
-import { BaseResource, type Id, type Params } from './base.ts';
+import { BaseResource, wrapIn, type Id, type Params } from './base.ts';
 
 export class Sequences extends BaseResource {
   list<T = any>(params: Params = {}): Promise<T> {
@@ -9,12 +9,14 @@ export class Sequences extends BaseResource {
     return this.httpGet<T>(`/api/v1/sequences/${id}`, options.includeSteps ? { include_steps: true } : {});
   }
 
+  /** Nests the attributes under `sequence`, because the API reads them with `params.require(:sequence)`. */
   create<T = any>(attrs: Params): Promise<T> {
-    return this.httpPost<T>('/api/v1/sequences', attrs);
+    return this.httpPost<T>('/api/v1/sequences', wrapIn('sequence', attrs));
   }
 
+  /** Nests the attributes under `sequence`, like `create`. */
   update<T = any>(id: Id, attrs: Params): Promise<T> {
-    return this.httpPatch<T>(`/api/v1/sequences/${id}`, attrs);
+    return this.httpPatch<T>(`/api/v1/sequences/${id}`, wrapIn('sequence', attrs));
   }
 
   delete<T = any>(id: Id): Promise<T> {
@@ -32,7 +34,7 @@ export class Sequences extends BaseResource {
    * wraps it in `subscriber`. A body that already has `subscriber` is sent as is.
    */
   addSubscriber<T = any>(sequenceId: Id, attrs: Params): Promise<T> {
-    return this.httpPost<T>(`/api/v1/sequences/${sequenceId}/add_subscriber`, wrapSubscriber(attrs));
+    return this.httpPost<T>(`/api/v1/sequences/${sequenceId}/add_subscriber`, wrapIn('subscriber', attrs));
   }
 
   removeSubscriber<T = any>(sequenceId: Id, email: string): Promise<T> {
@@ -56,12 +58,17 @@ export class Sequences extends BaseResource {
     return this.httpGet<T>(`/api/v1/sequences/${sequenceId}/steps/${stepId}`);
   }
 
+  /**
+   * Nests the attributes under `sequence_step`, because the API reads them with `params.require(:sequence_step)`.
+   * Older servers drop `taggify_list` when it is sent flat.
+   */
   createStep<T = any>(sequenceId: Id, attrs: Params): Promise<T> {
-    return this.httpPost<T>(`/api/v1/sequences/${sequenceId}/steps`, attrs);
+    return this.httpPost<T>(`/api/v1/sequences/${sequenceId}/steps`, wrapIn('sequence_step', attrs));
   }
 
+  /** Nests the attributes under `sequence_step`, like `createStep`. */
   updateStep<T = any>(sequenceId: Id, stepId: Id, attrs: Params): Promise<T> {
-    return this.httpPatch<T>(`/api/v1/sequences/${sequenceId}/steps/${stepId}`, attrs);
+    return this.httpPatch<T>(`/api/v1/sequences/${sequenceId}/steps/${stepId}`, wrapIn('sequence_step', attrs));
   }
 
   /** Reorders a step to sit directly after `underId`. */
@@ -72,11 +79,4 @@ export class Sequences extends BaseResource {
   deleteStep<T = any>(sequenceId: Id, stepId: Id): Promise<T> {
     return this.httpDelete<T>(`/api/v1/sequences/${sequenceId}/steps/${stepId}`);
   }
-}
-
-/** Nests flat subscriber attributes under `subscriber`, leaving an already-wrapped body alone. */
-function wrapSubscriber(attrs: Params): Params {
-  const nested = attrs.subscriber;
-  if (nested !== null && typeof nested === 'object' && !Array.isArray(nested)) return attrs;
-  return { subscriber: attrs };
 }

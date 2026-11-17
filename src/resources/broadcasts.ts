@@ -1,4 +1,4 @@
-import { BaseResource, type Id, type Params } from './base.ts';
+import { BaseResource, wrapIn, type Id, type Params } from './base.ts';
 
 export interface ScheduleParams extends Params {
   scheduled_send_at: string;
@@ -14,12 +14,17 @@ export class Broadcasts extends BaseResource {
     return this.httpGet<T>(`/api/v1/broadcasts/${id}`);
   }
 
+  /**
+   * Nests the attributes under `broadcast`, because the API reads them with `params.require(:broadcast)`.
+   * Older servers drop keys such as `taggify_list` and `email_headers` when they are sent flat.
+   */
   create<T = any>(attrs: Params): Promise<T> {
-    return this.httpPost<T>('/api/v1/broadcasts', attrs);
+    return this.httpPost<T>('/api/v1/broadcasts', wrapIn('broadcast', attrs));
   }
 
+  /** Nests the attributes under `broadcast`, like `create`. */
   update<T = any>(id: Id, attrs: Params): Promise<T> {
-    return this.httpPatch<T>(`/api/v1/broadcasts/${id}`, attrs);
+    return this.httpPatch<T>(`/api/v1/broadcasts/${id}`, wrapIn('broadcast', attrs));
   }
 
   delete<T = any>(id: Id): Promise<T> {
